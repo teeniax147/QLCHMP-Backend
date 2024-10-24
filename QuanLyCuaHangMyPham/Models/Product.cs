@@ -17,6 +17,12 @@ public partial class Product
 
     public string? ImageUrl { get; set; }
 
+    public int? FavoriteCount { get; set; }
+
+    public int? ReviewCount { get; set; }
+
+    public decimal? AverageRating { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public int? BrandId { get; set; }
@@ -31,11 +37,9 @@ public partial class Product
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
-    public virtual ICollection<Rate> Rates { get; set; } = new List<Rate>();
+    public virtual ICollection<ProductFeedback> ProductFeedbacks { get; set; } = new List<ProductFeedback>();
 
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
 
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
-
-    public virtual ICollection<SkinCondition> SkinConditions { get; set; } = new List<SkinCondition>();
 }

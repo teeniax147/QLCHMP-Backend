@@ -7,15 +7,19 @@ public partial class Order
 {
     public int Id { get; set; }
 
-    public int? CustomerId { get; set; }
+    public int CustomerId { get; set; }
 
     public int? CouponId { get; set; }
 
     public int? PaymentMethodId { get; set; }
 
+    public decimal? OriginalTotalAmount { get; set; }
+
     public decimal? TotalAmount { get; set; }
 
     public string? ShippingAddress { get; set; }
+
+    public int? ShippingCompanyId { get; set; }
 
     public string? ShippingMethod { get; set; }
 
@@ -31,9 +35,11 @@ public partial class Order
 
     public DateTime? OrderDate { get; set; }
 
-    public int? ShippingCompanyId { get; set; }
+    public DateTime? EstimatedDeliveryDate { get; set; }
 
-    public virtual Customer? Customer { get; set; }
+    public virtual Coupon? Coupon { get; set; }
+
+    public virtual Customer Customer { get; set; } = null!;
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 

@@ -1,245 +1,79 @@
 [
   {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "PutCustomer",
-    "RelativePath": "api/Customers/{cap-nhat-khach-hang-theo-id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "customer",
-        "Type": "QuanLyCuaHangMyPham.Models.Customer",
-        "IsRequired": true
-      },
-      {
-        "Name": "cap-nhat-khach-hang-theo-id",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "GetCustomers",
-    "RelativePath": "api/Customers/{Phan-trang}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "searchTerm",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "page",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "Phan-trang",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[QuanLyCuaHangMyPham.Models.Customer, QuanLyCuaHangMyPham, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "PostCustomer",
-    "RelativePath": "api/Customers/{them-khach-hang}",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "customer",
-        "Type": "QuanLyCuaHangMyPham.Models.Customer",
-        "IsRequired": true
-      },
-      {
-        "Name": "them-khach-hang",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "QuanLyCuaHangMyPham.Models.Customer",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "GetCustomer",
-    "RelativePath": "api/Customers/{tim-theo-id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "tim-theo-id",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "QuanLyCuaHangMyPham.Models.Customer",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "DeleteCustomer",
-    "RelativePath": "api/Customers/{xoa-khach-hang-theo-id}",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "xoa-khach-hang-theo-id",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "Register",
-    "RelativePath": "api/Customers/dang-ky",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CustomersController\u002BRegisterRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "LoginCustomer",
-    "RelativePath": "api/Customers/dang-nhap",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CustomersController\u002BLoginRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
-    "Method": "SendEmail",
-    "RelativePath": "api/Customers/gui-email",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CustomersController\u002BEmailRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
     "Method": "ForgotPassword",
-    "RelativePath": "api/Customers/quen-password",
+    "RelativePath": "api/Users/forgot-password",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CustomersController\u002BEmailRequest",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BForgotPasswordRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "LoginUser",
+    "RelativePath": "api/Users/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BLoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "Register",
+    "RelativePath": "api/Users/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BRegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
     "Method": "ResetPassword",
-    "RelativePath": "api/Customers/reset-password",
+    "RelativePath": "api/Users/reset-password",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CustomersController\u002BResetPasswordRequest",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BResetPasswordRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CustomersController",
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
     "Method": "VerifyOTP",
-    "RelativePath": "api/Customers/verify-otp",
+    "RelativePath": "api/Users/verify-otp",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CustomersController\u002BOtpRequest",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BOtpVerifyRequest",
         "IsRequired": true
       }
     ],

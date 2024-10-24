@@ -9,6 +9,10 @@ public partial class ShippingCompany
 
     public string Name { get; set; } = null!;
 
+    public decimal? ShippingCost { get; set; }
+
+    public string? ImageUrl { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

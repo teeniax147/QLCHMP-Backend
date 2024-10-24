@@ -7,6 +7,8 @@ public partial class Coupon
 {
     public int Id { get; set; }
 
+    public string Name { get; set; } = null!;
+
     public string Code { get; set; } = null!;
 
     public decimal? DiscountAmount { get; set; }
@@ -21,5 +23,9 @@ public partial class Coupon
 
     public decimal? MinimumOrderAmount { get; set; }
 
+    public int? QuantityAvailable { get; set; }
+
     public DateTime? CreatedAt { get; set; }
+
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

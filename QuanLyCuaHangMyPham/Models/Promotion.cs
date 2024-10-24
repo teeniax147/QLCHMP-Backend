@@ -7,6 +7,8 @@ public partial class Promotion
 {
     public int Id { get; set; }
 
+    public int? ProductId { get; set; }
+
     public string Name { get; set; } = null!;
 
     public decimal? DiscountPercentage { get; set; }
@@ -16,4 +18,6 @@ public partial class Promotion
     public DateOnly? EndDate { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+
+    public virtual Product? Product { get; set; }
 }
