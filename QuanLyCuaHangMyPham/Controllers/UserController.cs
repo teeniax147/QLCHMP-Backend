@@ -76,8 +76,8 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             // Tạo mã OTP và lưu trữ trong cache
             var otp = _emailService.GenerateOTP();
-            _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(1));
-            _cache.Set(request.Email + "_data", request, TimeSpan.FromMinutes(1));
+            _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5));
+            _cache.Set(request.Email + "_data", request, TimeSpan.FromMinutes(5));
             // Lưu thông tin đăng ký vào database với trạng thái "chờ xác nhận"
             
             // Gửi email OTP
@@ -202,13 +202,31 @@ namespace QuanLyCuaHangMyPham.Controllers
             var user = await _userManager.FindByNameAsync(request.EmailOrUsername)
                        ?? await _userManager.FindByEmailAsync(request.EmailOrUsername);
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+            // Nếu không tìm thấy người dùng
+            if (user == null)
             {
-                return Unauthorized("Tên đăng nhập hoặc mật khẩu không đúng.");
+                return Unauthorized(new { message = "Tên đăng nhập không đúng." });
             }
 
+            // Nếu tìm thấy người dùng nhưng mật khẩu không đúng
+            if (!await _userManager.CheckPasswordAsync(user, request.Password))
+            {
+                return Unauthorized(new { message = "Mật khẩu không đúng." });
+            }
+
+
+            // Tạo token JWT nếu đăng nhập thành công
             var token = GenerateJwtToken(user);
-            return Ok(new { token });
+
+            // Trả về thông báo thành công và token
+            return Ok(new
+            {
+                message = "Đăng nhập thành công.",
+                token = token,
+                userId = user.Id,
+                userName = user.UserName,
+                email = user.Email
+            });
         }
 
         private string GenerateJwtToken(ApplicationUser user)
