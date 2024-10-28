@@ -31,10 +31,6 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
     public virtual DbSet<Category> Categories { get; set; }
 
-    public virtual DbSet<ChatConversation> ChatConversations { get; set; }
-
-    public virtual DbSet<ChatMessage> ChatMessages { get; set; }
-
     public virtual DbSet<Coupon> Coupons { get; set; }
 
     public virtual DbSet<Customer> Customers { get; set; }
@@ -61,7 +57,6 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
     public virtual DbSet<Staff> Staff { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -72,41 +67,42 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
         base.OnModelCreating(modelBuilder);
 
-        // Cấu hình cho IdentityUserRole<int>
+        // Cấu hình cho các bảng Identity (AspNet tables)
         modelBuilder.Entity<IdentityUserRole<int>>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.RoleId });  // Đảm bảo rằng bạn có khóa chính
-            entity.ToTable("UserRoles");  // Đặt tên bảng nếu muốn thay đổi
-
-            // Cấu hình thêm nếu cần
+            entity.HasKey(e => new { e.UserId, e.RoleId });
+            entity.ToTable("UserRoles");
         });
+
         modelBuilder.Entity<IdentityUserLogin<int>>(entity =>
         {
-            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });  // Khóa chính là kết hợp của LoginProvider và ProviderKey
-            entity.ToTable("UserLogins");  // Đặt tên bảng nếu muốn thay đổi
+            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });
+            entity.ToTable("UserLogins");
         });
+
         modelBuilder.Entity<IdentityUserToken<int>>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });  // Khóa chính cho token
-            entity.ToTable("UserTokens");  // Đặt tên bảng nếu muốn thay đổi
+            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
+            entity.ToTable("UserTokens");
         });
+
         modelBuilder.Entity<IdentityUserClaim<int>>(entity =>
         {
-            entity.HasKey(e => e.Id);  // Khóa chính là Id
-            entity.ToTable("UserClaims");  // Đặt tên bảng nếu muốn thay đổi
+            entity.HasKey(e => e.Id);
+            entity.ToTable("UserClaims");
         });
         // Cấu hình cho các thực thể khác
 
+        // Cấu hình cho các thực thể khác (liên kết với bảng AspNetUsers)
         modelBuilder.Entity<Admin>(entity =>
         {
             entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141C99ADA52");
 
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
-            entity.Property(e => e.RoleDescription)
-                .HasColumnType("text")
-                .HasColumnName("role_description");
+            entity.Property(e => e.RoleDescription).HasColumnType("text").HasColumnName("role_description");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
+            // Liên kết với ApplicationUser thay vì bảng User
             entity.HasOne(d => d.User).WithMany(p => p.Admins)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__Admins__user_id__48CFD27E");
@@ -230,63 +226,6 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasConstraintName("FK__Categorie__paren__5070F446");
         });
 
-        modelBuilder.Entity<ChatConversation>(entity =>
-        {
-            entity.HasKey(e => e.ConversationId).HasName("PK__ChatConv__311E7E9ADE9B6CE2");
-
-            entity.ToTable("ChatConversation");
-
-            entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
-            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
-            entity.Property(e => e.LastMessageAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("last_message_at");
-            entity.Property(e => e.StaffId).HasColumnName("staff_id");
-            entity.Property(e => e.StartedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("started_at");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasDefaultValue("Hoạt động")
-                .HasColumnName("status");
-
-            entity.HasOne(d => d.Customer).WithMany(p => p.ChatConversations)
-                .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK__ChatConve__custo__1CBC4616");
-
-            entity.HasOne(d => d.Staff).WithMany(p => p.ChatConversations)
-                .HasForeignKey(d => d.StaffId)
-                .HasConstraintName("FK__ChatConve__staff__1DB06A4F");
-        });
-
-        modelBuilder.Entity<ChatMessage>(entity =>
-        {
-            entity.HasKey(e => e.MessageId).HasName("PK__ChatMess__0BBF6EE6C7322F61");
-
-            entity.ToTable("ChatMessage");
-
-            entity.Property(e => e.MessageId).HasColumnName("message_id");
-            entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
-            entity.Property(e => e.MessageText)
-                .HasColumnType("text")
-                .HasColumnName("message_text");
-            entity.Property(e => e.SenderId).HasColumnName("sender_id");
-            entity.Property(e => e.SenderRole)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("sender_role");
-            entity.Property(e => e.SentAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("sent_at");
-
-            entity.HasOne(d => d.Conversation).WithMany(p => p.ChatMessages)
-                .HasForeignKey(d => d.ConversationId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK__ChatMessa__conve__2180FB33");
-        });
-
         modelBuilder.Entity<Coupon>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Coupons__3213E83F505ACA10");
@@ -328,20 +267,11 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
         {
             entity.HasKey(e => e.CustomerId).HasName("PK__Customer__CD65CB8580B29AEF");
 
-            entity.ToTable(tb => tb.HasTrigger("trg_update_membership_level"));
-
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
-            entity.Property(e => e.Address)
-                .HasColumnType("text")
-                .HasColumnName("address");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("created_at");
+            entity.Property(e => e.Address).HasColumnType("text").HasColumnName("address");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnName("created_at");
             entity.Property(e => e.MembershipLevelId).HasColumnName("membership_level_id");
-            entity.Property(e => e.TotalSpending)
-                .HasDefaultValue(0.00m)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("total_spending");
+            entity.Property(e => e.TotalSpending).HasDefaultValue(0.00m).HasColumnType("decimal(10, 2)").HasColumnName("total_spending");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             entity.HasOne(d => d.MembershipLevel).WithMany(p => p.Customers)
@@ -349,6 +279,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK__Customers__membe__45F365D3");
 
+            // Liên kết với ApplicationUser thay vì bảng User
             entity.HasOne(d => d.User).WithMany(p => p.Customers)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__Customers__user___44FF419A");
@@ -687,67 +618,14 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
             entity.HasKey(e => e.StaffId).HasName("PK__Staff__1963DD9C4B3F26DF");
 
             entity.Property(e => e.StaffId).HasColumnName("staff_id");
-            entity.Property(e => e.HireDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("hire_date");
-            entity.Property(e => e.Position)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("position");
+            entity.Property(e => e.HireDate).HasDefaultValueSql("(getdate())").HasColumnName("hire_date");
+            entity.Property(e => e.Position).HasMaxLength(100).IsUnicode(false).HasColumnName("position");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Staff)
+            // Liên kết với ApplicationUser thay vì bảng User
+            entity.HasOne(d => d.User).WithMany(p => p.Staffs)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__Staff__user_id__4CA06362");
-        });
-
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3213E83F9A29568F");
-
-            entity.HasIndex(e => e.Email, "UQ__Users__AB6E6164E4DFD325").IsUnique();
-
-            entity.HasIndex(e => e.Username, "UQ__Users__F3DBC57210DC9F7D").IsUnique();
-
-            entity.HasIndex(e => e.Email, "idx_users_email");
-
-            entity.HasIndex(e => e.Username, "idx_users_username");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Email)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("email");
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("first_name");
-            entity.Property(e => e.LastModified)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("last_modified");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("last_name");
-            entity.Property(e => e.Password)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("password");
-            entity.Property(e => e.Phone)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("phone");
-            entity.Property(e => e.Role)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("role");
-            entity.Property(e => e.Username)
-                .HasMaxLength(100)
-                .IsUnicode(false)
-                .HasColumnName("username");
         });
 
         OnModelCreatingPartial(modelBuilder);

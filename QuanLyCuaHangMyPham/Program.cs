@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,11 +10,12 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using QuanLyCuaHangMyPham.Models;
 using QuanLyCuaHangMyPham.IdentityModels;
+using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
 var MyAllowSpecificOrigins = "AllowSpecificOrigins";
-
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 // Thêm CORS
 builder.Services.AddCors(options =>
 {
@@ -43,6 +45,12 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var keyString = builder.Configuration["Jwt:Key"];
+    if (string.IsNullOrEmpty(keyString))
+    {
+        throw new InvalidOperationException("JWT key is not set in configuration");
+    }
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -51,7 +59,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        IssuerSigningKey = key
     };
 });
 
@@ -60,7 +68,35 @@ builder.Services.AddControllers();
 
 // Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+    // Thêm phần cấu hình cho JWT Authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please insert JWT with Bearer into field",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+});
 
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -74,7 +110,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging()) // Cấu hình môi trường tùy theo nhu cầu
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.DefaultModelsExpandDepth(-1); // Ẩn các model chi tiết nếu muốn
+    });
 }
 
 // Sử dụng Https

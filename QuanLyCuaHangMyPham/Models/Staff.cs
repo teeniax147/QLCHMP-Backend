@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QuanLyCuaHangMyPham.IdentityModels;
+using System;
 using System.Collections.Generic;
 
 namespace QuanLyCuaHangMyPham.Models;
@@ -13,5 +14,5 @@ public partial class Staff
 
     public DateTime? HireDate { get; set; }
 
-    public virtual User User { get; set; } = null!;
+    public virtual ApplicationUser User { get; set; } = null!;
 }

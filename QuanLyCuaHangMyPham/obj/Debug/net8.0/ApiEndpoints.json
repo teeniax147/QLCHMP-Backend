@@ -1,6 +1,86 @@
 [
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "DeleteUser",
+    "RelativePath": "api/Users/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "AssignRole",
+    "RelativePath": "api/Users/assign-role",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BAssignRoleRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "ChangeEmail",
+    "RelativePath": "api/Users/change-email",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BChangeEmailRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "ChangePassword",
+    "RelativePath": "api/Users/change-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BChangePasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "CreateUser",
+    "RelativePath": "api/Users/create-user",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BCreateUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
     "Method": "ForgotPassword",
     "RelativePath": "api/Users/forgot-password",
     "HttpMethod": "POST",
@@ -10,6 +90,32 @@
       {
         "Name": "request",
         "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BForgotPasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "GetUserInfo",
+    "RelativePath": "api/Users/get-user-info",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "LockUser",
+    "RelativePath": "api/Users/lock",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BLockUserRequest",
         "IsRequired": true
       }
     ],
@@ -29,6 +135,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "Logout",
+    "RelativePath": "api/Users/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -58,6 +174,22 @@
       {
         "Name": "request",
         "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BResetPasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.UsersController",
+    "Method": "UpdateUserInfo",
+    "RelativePath": "api/Users/update",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UsersController\u002BUpdateUserInfoRequest",
         "IsRequired": true
       }
     ],

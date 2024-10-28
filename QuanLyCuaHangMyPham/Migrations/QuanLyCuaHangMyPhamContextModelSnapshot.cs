@@ -481,94 +481,6 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.ChatConversation", b =>
-                {
-                    b.Property<int>("ConversationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("conversation_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConversationId"));
-
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int")
-                        .HasColumnName("customer_id");
-
-                    b.Property<DateTime?>("LastMessageAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("last_message_at")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<int?>("StaffId")
-                        .HasColumnType("int")
-                        .HasColumnName("staff_id");
-
-                    b.Property<DateTime?>("StartedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("started_at")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
-                        .HasDefaultValue("Hoạt động")
-                        .HasColumnName("status");
-
-                    b.HasKey("ConversationId")
-                        .HasName("PK__ChatConv__311E7E9ADE9B6CE2");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("StaffId");
-
-                    b.ToTable("ChatConversation", (string)null);
-                });
-
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.ChatMessage", b =>
-                {
-                    b.Property<int>("MessageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("message_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
-
-                    b.Property<int?>("ConversationId")
-                        .HasColumnType("int")
-                        .HasColumnName("conversation_id");
-
-                    b.Property<string>("MessageText")
-                        .HasColumnType("text")
-                        .HasColumnName("message_text");
-
-                    b.Property<int?>("SenderId")
-                        .HasColumnType("int")
-                        .HasColumnName("sender_id");
-
-                    b.Property<string>("SenderRole")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
-                        .HasColumnName("sender_role");
-
-                    b.Property<DateTime?>("SentAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("sent_at")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.HasKey("MessageId")
-                        .HasName("PK__ChatMess__0BBF6EE6C7322F61");
-
-                    b.HasIndex("ConversationId");
-
-                    b.ToTable("ChatMessage", (string)null);
-                });
-
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Coupon", b =>
                 {
                     b.Property<int>("Id")
@@ -677,12 +589,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Customers", t =>
-                        {
-                            t.HasTrigger("trg_update_membership_level");
-                        });
-
-                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Favorite", b =>
@@ -1216,97 +1123,6 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.ToTable("Staff");
                 });
 
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("email");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("first_name");
-
-                    b.Property<bool>("IsSuspended")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModified")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("last_modified")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("last_name");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("password");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("phone");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
-                        .HasColumnName("role");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("username");
-
-                    b.HasKey("Id")
-                        .HasName("PK__Users__3213E83F9A29568F");
-
-                    b.HasIndex(new[] { "Email" }, "UQ__Users__AB6E6164E4DFD325")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "Username" }, "UQ__Users__F3DBC57210DC9F7D")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "Email" }, "idx_users_email");
-
-                    b.HasIndex(new[] { "Username" }, "idx_users_username");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("QuanLyCuaHangMyPham.IdentityModels.ApplicationRole", null)
@@ -1377,7 +1193,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Admin", b =>
                 {
-                    b.HasOne("QuanLyCuaHangMyPham.Models.User", "User")
+                    b.HasOne("QuanLyCuaHangMyPham.IdentityModels.ApplicationUser", "User")
                         .WithMany("Admins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1441,35 +1257,6 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.ChatConversation", b =>
-                {
-                    b.HasOne("QuanLyCuaHangMyPham.Models.Customer", "Customer")
-                        .WithMany("ChatConversations")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK__ChatConve__custo__1CBC4616");
-
-                    b.HasOne("QuanLyCuaHangMyPham.Models.User", "Staff")
-                        .WithMany("ChatConversations")
-                        .HasForeignKey("StaffId")
-                        .HasConstraintName("FK__ChatConve__staff__1DB06A4F");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Staff");
-                });
-
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.ChatMessage", b =>
-                {
-                    b.HasOne("QuanLyCuaHangMyPham.Models.ChatConversation", "Conversation")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK__ChatMessa__conve__2180FB33");
-
-                    b.Navigation("Conversation");
-                });
-
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Customer", b =>
                 {
                     b.HasOne("QuanLyCuaHangMyPham.Models.MembershipLevel", "MembershipLevel")
@@ -1478,7 +1265,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK__Customers__membe__45F365D3");
 
-                    b.HasOne("QuanLyCuaHangMyPham.Models.User", "User")
+                    b.HasOne("QuanLyCuaHangMyPham.IdentityModels.ApplicationUser", "User")
                         .WithMany("Customers")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1499,7 +1286,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .IsRequired()
                         .HasConstraintName("FK__Favorites__produ__07C12930");
 
-                    b.HasOne("QuanLyCuaHangMyPham.Models.User", "User")
+                    b.HasOne("QuanLyCuaHangMyPham.IdentityModels.ApplicationUser", "User")
                         .WithMany("Favorites")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1625,14 +1412,25 @@ namespace QuanLyCuaHangMyPham.Migrations
 
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Staff", b =>
                 {
-                    b.HasOne("QuanLyCuaHangMyPham.Models.User", "User")
-                        .WithMany("Staff")
+                    b.HasOne("QuanLyCuaHangMyPham.IdentityModels.ApplicationUser", "User")
+                        .WithMany("Staffs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK__Staff__user_id__4CA06362");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("QuanLyCuaHangMyPham.IdentityModels.ApplicationUser", b =>
+                {
+                    b.Navigation("Admins");
+
+                    b.Navigation("Customers");
+
+                    b.Navigation("Favorites");
+
+                    b.Navigation("Staffs");
                 });
 
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Brand", b =>
@@ -1652,11 +1450,6 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.Navigation("InverseParent");
                 });
 
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.ChatConversation", b =>
-                {
-                    b.Navigation("ChatMessages");
-                });
-
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Coupon", b =>
                 {
                     b.Navigation("Orders");
@@ -1665,8 +1458,6 @@ namespace QuanLyCuaHangMyPham.Migrations
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.Customer", b =>
                 {
                     b.Navigation("Carts");
-
-                    b.Navigation("ChatConversations");
 
                     b.Navigation("Orders");
 
@@ -1706,19 +1497,6 @@ namespace QuanLyCuaHangMyPham.Migrations
             modelBuilder.Entity("QuanLyCuaHangMyPham.Models.ShippingCompany", b =>
                 {
                     b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("QuanLyCuaHangMyPham.Models.User", b =>
-                {
-                    b.Navigation("Admins");
-
-                    b.Navigation("ChatConversations");
-
-                    b.Navigation("Customers");
-
-                    b.Navigation("Favorites");
-
-                    b.Navigation("Staff");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QuanLyCuaHangMyPham.IdentityModels;
+using System;
 using System.Collections.Generic;
 
 namespace QuanLyCuaHangMyPham.Models;
@@ -19,13 +20,11 @@ public partial class Customer
 
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
-    public virtual ICollection<ChatConversation> ChatConversations { get; set; } = new List<ChatConversation>();
-
     public virtual MembershipLevel? MembershipLevel { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<ProductFeedback> ProductFeedbacks { get; set; } = new List<ProductFeedback>();
 
-    public virtual User User { get; set; } = null!;
+    public virtual ApplicationUser User { get; set; } = null!;
 }

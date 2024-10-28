@@ -17,6 +17,8 @@ using QuanLyCuaHangMyPham.Data;
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangMyPham.Models;
 using QuanLyCuaHangMyPham.IdentityModels;
+using Microsoft.AspNetCore.Authorization;
+using static QuanLyCuaHangMyPham.Controllers.UsersController;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -194,7 +196,47 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest("Mã OTP không chính xác hoặc đã hết hạn.");
             }
         }
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
+        {
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+    };
 
+            // Lấy các vai trò của người dùng và thêm chúng vào claims
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            // Kiểm tra lại giá trị key từ config có đúng không
+            var keyString = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(keyString))
+            {
+                throw new InvalidOperationException("Secret key is not set in configuration");
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            // Kiểm tra lại giá trị thời gian hết hạn từ config có đúng không
+            if (!int.TryParse(_configuration["Jwt:ExpireMinutes"], out int expireMinutes))
+            {
+                throw new InvalidOperationException("Expire time is not valid");
+            }
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(expireMinutes),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
         // Đăng nhập người dùng với JWT
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser([FromBody] LoginRequest request)
@@ -229,40 +271,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             });
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
-        {
-            var claims = new List<Claim>
-{
-    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),  // Chuyển đổi user.Id thành string
-    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())  // Chuyển đổi user.Id thành string
-};
-
-            // Kiểm tra lại giá trị key từ config có đúng không
-            var keyString = _configuration["Jwt:Key"];
-            if (string.IsNullOrEmpty(keyString))
-            {
-                throw new InvalidOperationException("Secret key is not set in configuration");
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            // Kiểm tra lại giá trị thời gian hết hạn từ config có đúng không
-            if (!int.TryParse(_configuration["Jwt:ExpireMinutes"], out int expireMinutes))
-            {
-                throw new InvalidOperationException("Expire time is not valid");
-            }
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(expireMinutes),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        
 
         // Gửi OTP để khôi phục mật khẩu
         [HttpPost("forgot-password")]
@@ -317,6 +326,361 @@ namespace QuanLyCuaHangMyPham.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi đặt lại mật khẩu.");
             }
+        }
+        [Authorize]
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Lấy thông tin UserId từ token JWT
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Người dùng chưa được xác thực.");
+            }
+
+            // Tìm người dùng dựa trên UserId
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+
+            // Cập nhật thông tin người dùng
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.PhoneNumber = request.Phone;
+            user.Address = request.Address;
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                _logger.LogError($"Error updating user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi cập nhật thông tin người dùng.");
+            }
+
+            _logger.LogInformation($"User {userId} updated successfully.");
+            return Ok("Cập nhật thông tin người dùng thành công.");
+        }
+
+        [Authorize]
+        [HttpGet("get-user-info")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Người dùng chưa được xác thực.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+
+            var userInfo = new
+            {
+                user.UserName,
+                user.Email,
+                user.FirstName,
+                user.LastName,
+                user.PhoneNumber,
+                user.Address
+            };
+
+            return Ok(userInfo);
+        }
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Kiểm tra sự khớp giữa mật khẩu mới và mật khẩu xác nhận
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return BadRequest(new { message = "Mật khẩu mới và mật khẩu xác nhận không khớp." });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Người dùng chưa được xác thực.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+
+            // Thực hiện đổi mật khẩu
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok("Mật khẩu đã được thay đổi thành công.");
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("create-user")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+        {
+            // Kiểm tra xem người dùng hiện tại có phải là Admin không
+            if (!User.IsInRole("Admin"))
+            {
+                return Forbid("Bạn không có quyền thực hiện thao tác này."); // Trả về 403 Forbidden nếu không phải Admin
+            }
+
+            // Tìm kiếm người dùng dựa trên email
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                return Conflict("Email này đã được sử dụng.");
+            }
+
+            // Tạo người dùng mới
+            var user = new ApplicationUser
+            {
+                UserName = request.Username,
+                Email = request.Email,
+                PhoneNumber = request.Phone,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Address = request.Address,
+                EmailConfirmed = true
+            };
+
+            // Tạo người dùng trong Identity
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            // Thêm vai trò cho người dùng
+            if (request.Role == "Admin" || request.Role == "Staff")
+            {
+                await _userManager.AddToRoleAsync(user, request.Role);
+            }
+            else
+            {
+                return BadRequest("Vai trò không hợp lệ.");
+            }
+
+            return Ok($"Tài khoản {request.Role} đã được tạo thành công.");
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("assign-role")]
+        public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, request.Role);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok($"Đã gán vai trò {request.Role} cho người dùng thành công.");
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("lock")]
+        public async Task<IActionResult> LockUser([FromBody] LockUserRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                _logger.LogWarning($"Không tìm thấy người dùng với ID: {request.UserId}");
+                return NotFound(new { message = "Không tìm thấy người dùng." });
+            }
+
+            // Bật hoặc tắt tính năng Lockout cho người dùng
+            user.LockoutEnabled = request.EnableLockout;
+
+            var lockoutEnd = DateTimeOffset.Parse(request.LockoutEnd);
+            var setLockoutResult = await _userManager.SetLockoutEndDateAsync(user, lockoutEnd);
+
+            if (!setLockoutResult.Succeeded)
+            {
+                _logger.LogError($"Lỗi khi khóa tài khoản của {user.UserName}");
+                return StatusCode(500, new { message = "Không thể khóa tài khoản." });
+            }
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                _logger.LogError($"Lỗi khi cập nhật người dùng: {string.Join(", ", updateResult.Errors.Select(e => e.Description))}");
+                return StatusCode(500, new { message = "Lỗi khi cập nhật thông tin tài khoản." });
+            }
+
+            _logger.LogInformation($"Tài khoản của {user.UserName} đã bị khóa đến {lockoutEnd}.");
+            return Ok(new { message = $"Tài khoản đã bị khóa đến {lockoutEnd}." });
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                _logger.LogWarning($"Không tìm thấy người dùng với ID: {userId}");
+                return NotFound(new { message = "Không tìm thấy người dùng." });
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                _logger.LogError($"Lỗi khi xóa người dùng: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                return StatusCode(500, new { message = "Lỗi khi xóa người dùng." });
+            }
+
+            _logger.LogInformation($"Đã xóa người dùng {user.UserName} thành công.");
+            return Ok(new { message = "Xóa người dùng thành công." });
+        }
+        [Authorize]
+        [HttpPut("change-email")]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "Không tìm thấy người dùng." });
+            }
+
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, request.NewEmail);
+            var result = await _userManager.ChangeEmailAsync(user, request.NewEmail, token);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogError($"Lỗi khi thay đổi email cho {user.UserName}");
+                return StatusCode(500, new { message = "Không thể thay đổi email." });
+            }
+
+            return Ok(new { message = "Email đã được thay đổi thành công." });
+        }
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "Không tìm thấy người dùng." });
+            }
+
+            // Đặt lại SecurityStamp để hủy các token hiện tại
+            await _userManager.UpdateSecurityStampAsync(user);
+            _logger.LogInformation($"Đã đăng xuất người dùng {user.UserName} thành công.");
+
+            return Ok(new { message = "Đăng xuất thành công." });
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("list")]
+        public async Task<IActionResult> GetUsersList(
+    int page = 1,
+    int pageSize = 10,
+    string? role = null,
+    string? search = null)
+        {
+            var query = _userManager.Users.AsQueryable();
+
+            // Tìm kiếm theo tên hoặc email nếu có từ khóa tìm kiếm
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(u => u.UserName.Contains(search) || u.Email.Contains(search));
+            }
+
+            // Lọc theo vai trò nếu có yêu cầu
+            if (!string.IsNullOrEmpty(role))
+            {
+                var usersInRole = await _userManager.GetUsersInRoleAsync(role);
+                query = usersInRole.AsQueryable();
+            }
+
+            // Tính tổng số lượng người dùng để hỗ trợ frontend phân trang
+            var totalCount = await query.CountAsync();
+
+            // Lấy danh sách người dùng theo phân trang
+            var users = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    u.PhoneNumber,
+                    u.LockoutEnd,
+                    u.TwoFactorEnabled,
+                    Roles = _userManager.GetRolesAsync(u).Result
+                })
+                .ToListAsync();
+
+            _logger.LogInformation($"Truy vấn danh sách người dùng, trang {page}, kích thước {pageSize}.");
+
+            return Ok(new
+            {
+                TotalUsers = totalCount,
+                CurrentPage = page,
+                PageSize = pageSize,
+                Users = users
+            });
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("unlock")]
+        public async Task<IActionResult> UnlockUser([FromBody] UnlockUserRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+            if (user == null)
+            {
+                _logger.LogWarning($"Không tìm thấy người dùng với ID: {request.UserId}");
+                return NotFound(new { message = "Không tìm thấy người dùng." });
+            }
+
+            // Kiểm tra xem tài khoản đã bị khóa chưa
+            var isLockedOut = await _userManager.IsLockedOutAsync(user);
+            if (!isLockedOut)
+            {
+                return BadRequest(new { message = "Tài khoản này không bị khóa." });
+            }
+
+            // Đặt lại trạng thái khóa tài khoản
+            var resetLockoutResult = await _userManager.SetLockoutEndDateAsync(user, null);
+            if (!resetLockoutResult.Succeeded)
+            {
+                _logger.LogError($"Lỗi khi mở khóa tài khoản của {user.UserName}");
+                return StatusCode(500, new { message = "Không thể mở khóa tài khoản." });
+            }
+
+            // Đặt lại số lần đăng nhập thất bại
+            var resetFailedCountResult = await _userManager.ResetAccessFailedCountAsync(user);
+            if (!resetFailedCountResult.Succeeded)
+            {
+                _logger.LogError($"Lỗi khi đặt lại số lần đăng nhập thất bại của {user.UserName}");
+                return StatusCode(500, new { message = "Không thể đặt lại số lần đăng nhập thất bại." });
+            }
+
+            _logger.LogInformation($"Đã mở khóa tài khoản của {user.UserName} thành công.");
+            return Ok(new { message = "Tài khoản đã được mở khóa thành công." });
         }
 
         // Các lớp request khác
@@ -388,6 +752,81 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             public string EmailOrUsername { get; set; }  // Cho phép nhập vào cả email hoặc username
             public string Password { get; set; }
+        }
+        public class UpdateUserInfoRequest
+        {
+            [Required(ErrorMessage = "Họ là bắt buộc")]
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Tên là bắt buộc")]
+            public string FirstName { get; set; }
+
+            [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+            public string Phone { get; set; }
+
+            public string Address { get; set; } // Địa chỉ người dùng
+        }
+        public class ChangePasswordRequest
+        {
+            [Required(ErrorMessage = "Mật khẩu hiện tại là bắt buộc")]
+            public string CurrentPassword { get; set; }
+
+            [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
+            [MinLength(8, ErrorMessage = "Mật khẩu mới phải có ít nhất 8 ký tự")]
+            public string NewPassword { get; set; }
+
+            [Required(ErrorMessage = "Xác nhận mật khẩu mới là bắt buộc")]
+            public string ConfirmNewPassword { get; set; }
+        }
+        // Model cho API tạo người dùng mới
+        public class CreateUserRequest
+        {
+            [Required(ErrorMessage = "Email là bắt buộc")]
+            [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+            public string Email { get; set; }
+
+            [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
+            public string Username { get; set; }
+
+            [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
+            [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự")]
+            public string Password { get; set; }
+
+            [Required(ErrorMessage = "Họ là bắt buộc")]
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "Tên là bắt buộc")]
+            public string FirstName { get; set; }
+
+            [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+            public string Phone { get; set; }
+
+            public string Address { get; set; }
+
+            [Required(ErrorMessage = "Vai trò là bắt buộc")]
+            [RegularExpression("^(Admin|Staff)$", ErrorMessage = "Vai trò chỉ có thể là 'Admin' hoặc 'Staff'.")]
+            public string Role { get; set; }
+        }
+        public class AssignRoleRequest
+        {
+            [Required] public int UserId { get; set; }
+            [Required] public string Role { get; set; }
+        }
+        public class LockUserRequest
+        {
+            [Required] public int UserId { get; set; }
+            [Required] public string LockoutEnd { get; set; }
+            public bool EnableLockout { get; set; } = true;  // Giá trị mặc định là bật Lockout
+        }
+        public class ChangeEmailRequest
+        {
+            [Required]
+            [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
+            public string NewEmail { get; set; }
+        }
+        public class UnlockUserRequest
+        {
+            [Required] public int UserId { get; set; }
         }
     }
 }

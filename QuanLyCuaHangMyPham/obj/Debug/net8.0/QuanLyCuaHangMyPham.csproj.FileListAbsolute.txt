@@ -298,3 +298,4 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microso
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\System.Security.Permissions.dll
