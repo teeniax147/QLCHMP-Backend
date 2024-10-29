@@ -99,7 +99,12 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
             entity.HasKey(e => e.AdminId).HasName("PK__Admins__43AA4141C99ADA52");
 
             entity.Property(e => e.AdminId).HasColumnName("admin_id");
-            entity.Property(e => e.RoleDescription).HasColumnType("ntext").HasColumnName("role_description");
+
+            // Sửa kiểu dữ liệu từ "ntext" thành "nvarchar(max)"
+            entity.Property(e => e.RoleDescription)
+                  .HasColumnType("nvarchar(max)")
+                  .HasColumnName("role_description");
+
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             // Liên kết với ApplicationUser thay vì bảng User
@@ -121,8 +126,9 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
 
+            // Sửa 'ntext' thành 'nvarchar(max)' để đảm bảo tính tương thích và hiệu suất
             entity.Property(e => e.Content)
-                .HasColumnType("ntext") // Sử dụng 'ntext' thay vì 'text' để hỗ trợ Unicode
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("content");
 
             entity.Property(e => e.CreatedAt)
@@ -160,9 +166,9 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
 
-            // Sử dụng 'ntext' để hỗ trợ Unicode cho mô tả
+            // Thay thế 'ntext' bằng 'nvarchar(max)' để hỗ trợ Unicode và hiệu suất tốt hơn
             entity.Property(e => e.Description)
-                .HasColumnType("ntext") // Đổi từ 'text' sang 'ntext'
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("description");
 
             // Đảm bảo 'LogoUrl' không cần hỗ trợ Unicode (vì là URL)
@@ -229,15 +235,15 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
 
-            // Sử dụng 'ntext' để đảm bảo hỗ trợ Unicode cho tiếng Việt
+            // Sửa 'ntext' thành 'nvarchar(max)' để hỗ trợ Unicode và đảm bảo hiệu suất
             entity.Property(e => e.Description)
-                .HasColumnType("ntext") // Đổi từ 'text' sang 'ntext'
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("description");
 
-            // Thiết lập IsUnicode(true) để hỗ trợ tên tiếng Việt
+            // Đảm bảo tên hỗ trợ Unicode cho tiếng Việt
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo chuỗi tên hỗ trợ tiếng Việt
+                .IsUnicode(true) // Hỗ trợ tiếng Việt
                 .HasColumnName("name");
 
             entity.Property(e => e.ParentId).HasColumnName("parent_id");
@@ -319,7 +325,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Cấu hình thuộc tính Address để hỗ trợ lưu tiếng Việt
             entity.Property(e => e.Address)
-                .HasColumnType("ntext")  // Chuyển sang ntext để hỗ trợ Unicode
+                .HasColumnType("nvarchar(max)")  // Thay 'ntext' bằng 'nvarchar(max)'
                 .HasColumnName("address");
 
             // Cấu hình thuộc tính CreatedAt với giá trị mặc định là ngày hiện tại
@@ -596,13 +602,13 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Description với hỗ trợ Unicode
             entity.Property(e => e.Description)
-                .HasColumnType("ntext") // Đổi sang ntext để hỗ trợ tiếng Việt và ký tự Unicode
+                .HasColumnType("nvarchar(max)") // Thay thế 'ntext' bằng 'nvarchar(max)'
                 .HasColumnName("description");
 
             // Thuộc tính ImageUrl
             entity.Property(e => e.ImageUrl)
                 .HasMaxLength(255)
-                .IsUnicode(false) // Không cần Unicode cho URL
+                .IsUnicode(false) // Không cần hỗ trợ Unicode cho URL
                 .HasColumnName("image_url");
 
             // Thuộc tính Name với hỗ trợ Unicode
@@ -639,7 +645,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Description với hỗ trợ Unicode
             entity.Property(e => e.Description)
-                .HasColumnType("ntext") // Đổi sang ntext để hỗ trợ tiếng Việt và Unicode
+                .HasColumnType("nvarchar(max)") // Thay 'ntext' bằng 'nvarchar(max)'
                 .HasColumnName("description");
 
             // Thuộc tính FavoriteCount với giá trị mặc định
@@ -725,7 +731,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính ReviewText hỗ trợ Unicode cho đánh giá
             entity.Property(e => e.ReviewText)
-                .HasColumnType("ntext") // Chuyển sang ntext để hỗ trợ tiếng Việt
+                .HasColumnType("nvarchar(max)") // Thay 'ntext' bằng 'nvarchar(max)'
                 .HasColumnName("review_text");
 
             // Khóa ngoại đến Customer
