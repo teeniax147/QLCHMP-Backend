@@ -180,6 +180,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
             // Sử dụng 'nvarchar' và 'IsUnicode(true)' để hỗ trợ tên thương hiệu bằng tiếng Việt
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
+                .HasColumnType("nvarchar(max)")
                 .IsUnicode(true) // Đảm bảo hỗ trợ Unicode cho tiếng Việt
                 .HasColumnName("name");
         });
@@ -242,8 +243,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Đảm bảo tên hỗ trợ Unicode cho tiếng Việt
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Hỗ trợ tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("name");
 
             entity.Property(e => e.ParentId).HasColumnName("parent_id");
@@ -302,8 +302,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Tên coupon với hỗ trợ Unicode
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Hỗ trợ tiếng Việt và các ký tự đặc biệt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("name");
 
             // Số lượng coupon khả dụng
@@ -399,8 +398,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Vị trí kho với hỗ trợ Unicode
             entity.Property(e => e.WarehouseLocation)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Hỗ trợ tiếng Việt và các ký tự đặc biệt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("warehouse_location");
 
             // Quan hệ giữa Inventory và Product
@@ -429,8 +427,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Tên cấp độ thành viên với hỗ trợ Unicode
             entity.Property(e => e.LevelName)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo hỗ trợ tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("level_name");
 
             // Số tiền chi tiêu tối thiểu để đạt cấp độ này
@@ -490,8 +487,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Trạng thái thanh toán, hỗ trợ tiếng Việt
             entity.Property(e => e.PaymentStatus)
-                .HasMaxLength(50)
-                .IsUnicode(true) // Đảm bảo Unicode cho tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("payment_status");
 
             // Địa chỉ giao hàng, hỗ trợ tiếng Việt
@@ -507,14 +503,12 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Phương thức giao hàng, hỗ trợ tiếng Việt
             entity.Property(e => e.ShippingMethod)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo Unicode cho tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("shipping_method");
 
             // Trạng thái đơn hàng, hỗ trợ tiếng Việt
             entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .IsUnicode(true) // Đảm bảo Unicode cho tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("status");
 
             entity.Property(e => e.TotalAmount)
@@ -560,8 +554,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Cấu hình thuộc tính ProductVariation
             entity.Property(e => e.ProductVariation)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo hỗ trợ Unicode cho tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("product_variation");
 
             entity.Property(e => e.Quantity).HasColumnName("quantity");
@@ -613,8 +606,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Name với hỗ trợ Unicode
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Hỗ trợ tiếng Việt và các ký tự đặc biệt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("name");
         });
 
@@ -661,8 +653,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Name hỗ trợ Unicode
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Hỗ trợ tiếng Việt và ký tự đặc biệt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("name");
 
             // Thuộc tính OriginalPrice và Price với định dạng tiền tệ
@@ -768,8 +759,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Name với hỗ trợ Unicode để lưu trữ tên khuyến mãi bằng tiếng Việt
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Sửa thành true để hỗ trợ tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("name");
 
             // Thuộc tính ProductId (khóa ngoại)
@@ -806,8 +796,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Name, cấu hình hỗ trợ Unicode cho tên công ty vận chuyển
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo hỗ trợ tiếng Việt cho tên công ty
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("name");
 
             // Thuộc tính ShippingCost, cấu hình kiểu decimal cho chi phí vận chuyển
@@ -831,8 +820,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             // Thuộc tính Position (Chức vụ) hỗ trợ Unicode cho các ký tự tiếng Việt
             entity.Property(e => e.Position)
-                .HasMaxLength(100)
-                .IsUnicode(true) // Đảm bảo hiển thị được tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("position");
 
             // Thuộc tính UserId để liên kết với ApplicationUser
