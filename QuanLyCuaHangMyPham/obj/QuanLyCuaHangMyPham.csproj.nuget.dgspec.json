@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {}
+    "C:\\Hw\\project\\skinfood\\s\\QLCHMP-Backend\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {}
   },
   "projects": {
-    "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {
+    "C:\\Hw\\project\\skinfood\\s\\QLCHMP-Backend\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+        "projectUniqueName": "C:\\Hw\\project\\skinfood\\s\\QLCHMP-Backend\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
         "projectName": "QuanLyCuaHangMyPham",
-        "projectPath": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
-        "packagesPath": "C:\\Users\\dangt\\.nuget\\packages\\",
-        "outputPath": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\obj\\",
+        "projectPath": "C:\\Hw\\project\\skinfood\\s\\QLCHMP-Backend\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+        "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+        "outputPath": "C:\\Hw\\project\\skinfood\\s\\QLCHMP-Backend\\QuanLyCuaHangMyPham\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\dangt\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -130,7 +130,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
