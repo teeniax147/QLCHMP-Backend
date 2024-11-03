@@ -207,6 +207,11 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPost("len-lich")]
         public async Task<IActionResult> ScheduleBlogPost([FromBody] BeautyBlogScheduleRequest request)
         {
+            // Kiểm tra xem CategoryId có hợp lệ không
+            if (!await _context.Categories.AnyAsync(c => c.Id == request.CategoryId))
+            {
+                return BadRequest("Danh mục không tồn tại.");
+            }
             var blog = new BeautyBlog
             {
                 Title = request.Title,

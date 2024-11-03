@@ -120,8 +120,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
             entity.Property(e => e.Id).HasColumnName("id");
 
             entity.Property(e => e.Author)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo hỗ trợ Unicode cho tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("author");
 
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
@@ -137,12 +136,11 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             entity.Property(e => e.FeaturedImage)
                 .HasMaxLength(255)
-                .IsUnicode(true) // Đảm bảo ảnh đường dẫn hỗ trợ tiếng Việt
+                .IsUnicode(false) // Đảm bảo ảnh đường dẫn hỗ trợ tiếng Việt
                 .HasColumnName("featured_image");
 
             entity.Property(e => e.Title)
-                .HasMaxLength(255)
-                .IsUnicode(true) // Tiêu đề cần hỗ trợ Unicode để ghi tiếng Việt
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("title");
 
             entity.Property(e => e.UpdatedAt)
@@ -181,7 +179,6 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnType("nvarchar(max)")
-                .IsUnicode(true) // Đảm bảo hỗ trợ Unicode cho tiếng Việt
                 .HasColumnName("name");
         });
 
