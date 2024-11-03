@@ -9,8 +9,10 @@ using System.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
 using QuanLyCuaHangMyPham.Models;
+using QuanLyCuaHangMyPham.Services;
 using QuanLyCuaHangMyPham.IdentityModels;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -64,13 +66,21 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Đăng ký các dịch vụ cho API controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new DateTimeFormatConverter("dd/MM/yyyy HH:mm:ss")); // Add custom DateTime format here
+    });
 
 // Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Quản Lý Cửa Hàng Mỹ Phẩm API -", Version = "v1" });
 
     // Thêm phần cấu hình cho JWT Authentication
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -96,6 +106,8 @@ builder.Services.AddSwaggerGen(c =>
             new string[] { }
         }
     });
+    
+
 });
 
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)

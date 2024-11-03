@@ -22,4 +22,8 @@ public partial class BeautyBlog
     public int? CategoryId { get; set; }
 
     public virtual Category? Category { get; set; }
+    // Thêm thuộc tính ViewCount
+    public int ViewCount { get; set; } = 0;
+    // Thêm thuộc tính ScheduledPublishDate
+    public DateTime? ScheduledPublishDate { get; set; }
 }

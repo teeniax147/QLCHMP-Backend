@@ -314,6 +314,9 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("featured_image");
 
+                    b.Property<DateTime?>("ScheduledPublishDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -326,6 +329,9 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("int");
 
                     b.HasKey("Id")
                         .HasName("PK__BeautyBl__3213E83FA9E2408C");

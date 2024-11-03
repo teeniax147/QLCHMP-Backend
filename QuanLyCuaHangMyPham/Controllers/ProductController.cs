@@ -21,13 +21,16 @@ namespace QuanLyCuaHangMyPham.Controllers
             _context = context;
         }
 
-        // GET: api/Products
-        [HttpGet]
+        // GET: api/san-pham/danh-sach
+        /// <summary>
+        /// Lấy danh sách sản phẩm với tìm kiếm, sắp xếp và phân trang
+        /// </summary>
+        [HttpGet("danh-sach")]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10,
-    [FromQuery] string searchString = null,
-    [FromQuery] string sortOrder = "asc")
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string searchString = null,
+            [FromQuery] string sortOrder = "asc")
         {
             var products = _context.Products.AsQueryable();
 
@@ -51,36 +54,41 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok(new
             {
-                Products = pagedProducts,
-                TotalCount = totalProducts,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                SortOrder = sortOrder
+                DanhSachSanPham = pagedProducts,
+                TongSoSanPham = totalProducts,
+                SoTrang = pageNumber,
+                SoSanPhamMoiTrang = pageSize,
+                ThuTuSapXep = sortOrder
             });
         }
 
-        // GET: api/Products/5
-        [HttpGet("{id}")]
+        // GET: api/san-pham/chi-tiet/{id}
+        /// <summary>
+        /// Lấy chi tiết một sản phẩm dựa trên ID
+        /// </summary>
+        [HttpGet("chi-tiet/{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
             var product = await _context.Products.FindAsync(id);
 
             if (product == null)
             {
-                return NotFound();
+                return NotFound("Không tìm thấy sản phẩm.");
             }
 
-            return product;
+            return Ok(product);
         }
 
-        // PUT: api/Products/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        // PUT: api/san-pham/cap-nhat/{id}
+        /// <summary>
+        /// Cập nhật thông tin sản phẩm dựa trên ID
+        /// </summary>
+        [HttpPut("cap-nhat/{id}")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
             if (id != product.Id)
             {
-                return BadRequest();
+                return BadRequest("ID sản phẩm không khớp.");
             }
 
             _context.Entry(product).State = EntityState.Modified;
@@ -93,27 +101,26 @@ namespace QuanLyCuaHangMyPham.Controllers
             {
                 if (!ProductExists(id))
                 {
-                    return NotFound();
+                    return NotFound("Không tìm thấy sản phẩm để cập nhật.");
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Concurrency error occurred. " +
-                        "Try again, and if the problem persists, see your system administrator.");
+                    ModelState.AddModelError("", "Lỗi đồng bộ dữ liệu. Vui lòng thử lại.");
                 }
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError("", "Unable to save changes. " +
-                    "Try again, and if the problem persists " +
-                    "see your system administrator.");
+                ModelState.AddModelError("", "Không thể lưu thay đổi. Vui lòng thử lại sau.");
             }
 
-            return Ok(product);
+            return Ok("Cập nhật sản phẩm thành công.");
         }
 
-        // POST: api/Products
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        // POST: api/san-pham/them-moi
+        /// <summary>
+        /// Thêm một sản phẩm mới
+        /// </summary>
+        [HttpPost("them-moi")]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
             try
@@ -127,49 +134,49 @@ namespace QuanLyCuaHangMyPham.Controllers
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError("", "Unable to save changes. " +
-                    "Try again, and if the problem persists " +
-                    "see your system administrator.");
+                ModelState.AddModelError("", "Không thể lưu thay đổi. Vui lòng thử lại sau.");
             }
 
             return BadRequest(ModelState);
         }
-        // DELETE: api/Products/5
-        [HttpDelete("{id}")]
+
+        // DELETE: api/san-pham/xoa/{id}
+        /// <summary>
+        /// Xóa một sản phẩm theo ID
+        /// </summary>
+        [HttpDelete("xoa/{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null)
             {
-                return NotFound();
+                return NotFound("Không tìm thấy sản phẩm để xóa.");
             }
 
             try
             {
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok("Xóa sản phẩm thành công.");
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError("", "Unable to delete product. " +
-                    "Try again, and if the problem persists " +
-                    "see your system administrator.");
+                ModelState.AddModelError("", "Không thể xóa sản phẩm. Vui lòng thử lại sau.");
             }
 
             return BadRequest(ModelState);
         }
 
-        private bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.Id == id);
-        }
-        [HttpGet("search")]
+        // GET: api/san-pham/tim-kiem
+        /// <summary>
+        /// Tìm kiếm sản phẩm theo từ khóa
+        /// </summary>
+        [HttpGet("tim-kiem")]
         public async Task<ActionResult<IEnumerable<Product>>> SearchProducts([FromQuery] string keyword)
         {
             if (string.IsNullOrEmpty(keyword))
             {
-                return BadRequest("Hãy nhập tìm kiếm");
+                return BadRequest("Hãy nhập từ khóa tìm kiếm.");
             }
 
             var products = await _context.Products
@@ -179,6 +186,10 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok(products);
         }
 
+        // Kiểm tra xem sản phẩm có tồn tại không
+        private bool ProductExists(int id)
+        {
+            return _context.Products.Any(e => e.Id == id);
+        }
     }
 }
-

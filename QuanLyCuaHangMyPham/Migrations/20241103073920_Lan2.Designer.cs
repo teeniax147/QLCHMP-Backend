@@ -12,8 +12,8 @@ using QuanLyCuaHangMyPham.Data;
 namespace QuanLyCuaHangMyPham.Migrations
 {
     [DbContext(typeof(QuanLyCuaHangMyPhamContext))]
-    [Migration("20241026135057_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241103073920_Lan2")]
+    partial class Lan2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -266,7 +266,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AdminId"));
 
                     b.Property<string>("RoleDescription")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("role_description");
 
                     b.Property<int>("UserId")
@@ -292,8 +292,8 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Author")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("author");
 
                     b.Property<int?>("CategoryId")
@@ -302,7 +302,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("content");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -313,15 +313,18 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("FeaturedImage")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("featured_image");
+
+                    b.Property<DateTime?>("ScheduledPublishDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -329,6 +332,9 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("int");
 
                     b.HasKey("Id")
                         .HasName("PK__BeautyBl__3213E83FA9E2408C");
@@ -354,7 +360,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
                     b.Property<string>("LogoUrl")
@@ -366,8 +372,8 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
@@ -462,14 +468,12 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.Property<int?>("ParentId")
@@ -528,9 +532,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.Property<int?>("QuantityAvailable")
@@ -562,7 +564,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerId"));
 
                     b.Property<string>("Address")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("address");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -643,9 +645,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnName("quantity_in_stock");
 
                     b.Property<string>("WarehouseLocation")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("warehouse_location");
 
                     b.HasKey("InventoryId")
@@ -671,7 +671,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MembershipLevelId"));
 
                     b.Property<string>("Benefits")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(MAX)")
                         .HasColumnName("benefits");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -682,9 +682,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("LevelName")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("level_name");
 
                     b.Property<decimal>("MinimumSpending")
@@ -729,7 +727,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("OrderNotes")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(MAX)")
                         .HasColumnName("order_notes");
 
                     b.Property<decimal?>("OriginalTotalAmount")
@@ -741,13 +739,11 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnName("payment_method_id");
 
                     b.Property<string>("PaymentStatus")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("payment_status");
 
                     b.Property<string>("ShippingAddress")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(MAX)")
                         .HasColumnName("shipping_address");
 
                     b.Property<int?>("ShippingCompanyId")
@@ -759,15 +755,11 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnName("shipping_cost");
 
                     b.Property<string>("ShippingMethod")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("shipping_method");
 
                     b.Property<string>("Status")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("status");
 
                     b.Property<decimal?>("TotalAmount")
@@ -829,9 +821,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnName("product_id");
 
                     b.Property<string>("ProductVariation")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("product_variation");
 
                     b.Property<int?>("Quantity")
@@ -874,7 +864,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
                     b.Property<string>("ImageUrl")
@@ -885,9 +875,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
@@ -922,7 +910,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
                     b.Property<int?>("FavoriteCount")
@@ -939,9 +927,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.Property<decimal>("OriginalPrice")
@@ -996,7 +982,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnName("rating");
 
                     b.Property<string>("ReviewText")
-                        .HasColumnType("text")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("review_text");
 
                     b.HasKey("FeedbackId")
@@ -1034,9 +1020,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.Property<int?>("ProductId")
@@ -1078,9 +1062,7 @@ namespace QuanLyCuaHangMyPham.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("name");
 
                     b.Property<decimal?>("ShippingCost")
@@ -1109,9 +1091,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Position")
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("position");
 
                     b.Property<int>("UserId")
@@ -1255,6 +1235,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.HasOne("QuanLyCuaHangMyPham.Models.Category", "Parent")
                         .WithMany("InverseParent")
                         .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK__Categorie__paren__5070F446");
 
                     b.Navigation("Parent");
