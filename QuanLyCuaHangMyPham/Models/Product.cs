@@ -13,6 +13,8 @@ public partial class Product
 
     public decimal OriginalPrice { get; set; }
 
+    
+
     public string? Description { get; set; }
 
     public string? ImageUrl { get; set; }
@@ -42,4 +44,19 @@ public partial class Product
     public virtual ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
 
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
+
+    public decimal? ShockPrice
+    {
+        get
+        {
+            // Tìm chương trình khuyến mãi hiện tại
+            var currentPromotion = Promotions
+                .FirstOrDefault(p => p.StartDate <= DateTime.Now && p.EndDate >= DateTime.Now);
+
+            // Nếu có khuyến mãi hiện tại, tính ShockPrice
+            return currentPromotion != null
+                ? Price * (1 - (currentPromotion.DiscountPercentage ?? 0) / 100)
+                : (decimal?)null;
+        }
+    }
 }

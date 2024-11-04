@@ -42,13 +42,13 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // GET: api/beauty-blog/{id} - Lấy bài viết theo ID
         [HttpGet("{id}")]
-        public async Task<ActionResult<BeautyBlog>> GetBlogById(int id)
+        public async Task<ActionResult<object>> GetBlogById(int id)
         {
             var blog = await _context.BeautyBlogs.Include(b => b.Category).FirstOrDefaultAsync(b => b.Id == id);
 
             if (blog == null)
             {
-                return NotFound("Bài viết không tồn tại.");
+                return NotFound(new { Message = "Bài viết không tồn tại." });
             }
 
             return Ok(new { Message = "Lấy bài viết thành công", Blog = blog });

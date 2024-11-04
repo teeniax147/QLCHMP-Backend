@@ -661,6 +661,9 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("price");
+            // Thuộc tính ShockPrice với giá trị có thể null
+
+            
 
             // Thuộc tính ReviewCount với giá trị mặc định
             entity.Property(e => e.ReviewCount)
@@ -672,6 +675,12 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasForeignKey(d => d.BrandId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK__Products__brand___5BE2A6F2");
+
+            // Cấu hình liên kết khóa ngoại với Promotion (nếu cần thêm liên kết đặc biệt)
+            entity.HasMany(d => d.Promotions).WithOne(p => p.Product)
+                .HasForeignKey(p => p.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__Products__promot__6BE40491");
 
             // Cấu hình liên kết nhiều-nhiều giữa Product và Category
             entity.HasMany(d => d.Categories).WithMany(p => p.Products)

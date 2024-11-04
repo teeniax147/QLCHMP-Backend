@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyCuaHangMyPham.Data;
 
@@ -11,9 +12,11 @@ using QuanLyCuaHangMyPham.Data;
 namespace QuanLyCuaHangMyPham.Migrations
 {
     [DbContext(typeof(QuanLyCuaHangMyPhamContext))]
-    partial class QuanLyCuaHangMyPhamContextModelSnapshot : ModelSnapshot
+    [Migration("20241104050014_Lan4")]
+    partial class Lan4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
