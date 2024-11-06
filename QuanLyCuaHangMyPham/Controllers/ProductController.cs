@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,50 +24,68 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // GET: api/san-pham/danh-sach
-        /// <summary>
-        /// Lấy danh sách sản phẩm với tìm kiếm, sắp xếp và phân trang
-        /// </summary>
         [HttpGet("danh-sach")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string searchString = null,
-            [FromQuery] string sortOrder = "asc")
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] FilterProductsRequest request)
         {
-            var products = _context.Products.AsQueryable();
-
-            if (!string.IsNullOrEmpty(searchString))
+            if (request.PageNumber <= 0 || request.PageSize <= 0)
             {
-                products = products.Where(p => p.Name.Contains(searchString));
+                return BadRequest("Số trang và số sản phẩm mỗi trang phải lớn hơn 0.");
             }
 
-            products = sortOrder.ToLower() switch
+            var products = _context.Products
+                .Include(p => p.Inventories)
+                .Include(p => p.Promotions)
+                .AsQueryable();
+
+            // Lọc theo giá
+            if (request.MinPrice.HasValue)
             {
-                "desc" => products.OrderByDescending(p => p.Price),
-                _ => products.OrderBy(p => p.Price)
-            };
+                products = products.Where(p => p.Price >= request.MinPrice.Value);
+            }
+            if (request.MaxPrice.HasValue)
+            {
+                products = products.Where(p => p.Price <= request.MaxPrice.Value);
+            }
 
+            // Lọc theo số lượng tồn kho
+            if (request.MinStock.HasValue)
+            {
+                products = products.Where(p => p.Inventories.Sum(i => i.QuantityInStock) >= request.MinStock.Value);
+            }
+            if (request.MaxStock.HasValue)
+            {
+                products = products.Where(p => p.Inventories.Sum(i => i.QuantityInStock) <= request.MaxStock.Value);
+            }
+
+            // Lọc theo trạng thái khuyến mãi
+            if (request.IsOnSale.HasValue)
+            {
+                products = products.Where(p => p.Promotions.Any(pr => pr.StartDate <= DateTime.Now && pr.EndDate >= DateTime.Now) == request.IsOnSale.Value);
+            }
+
+            // Lọc theo thương hiệu
+            if (request.BrandId.HasValue)
+            {
+                products = products.Where(p => p.BrandId == request.BrandId.Value);
+            }
+
+            // Phân trang
             var totalProducts = await products.CountAsync();
-
             var pagedProducts = await products
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .ToListAsync();
 
             return Ok(new
             {
                 DanhSachSanPham = pagedProducts,
                 TongSoSanPham = totalProducts,
-                SoTrang = pageNumber,
-                SoSanPhamMoiTrang = pageSize,
-                ThuTuSapXep = sortOrder
+                SoTrang = request.PageNumber,
+                SoSanPhamMoiTrang = request.PageSize
             });
         }
 
         // GET: api/san-pham/chi-tiet/{id}
-        /// <summary>
-        /// Lấy chi tiết một sản phẩm dựa trên ID
-        /// </summary>
         [HttpGet("chi-tiet/{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
@@ -79,71 +99,74 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok(product);
         }
 
-        // PUT: api/san-pham/cap-nhat/{id}
-        /// <summary>
-        /// Cập nhật thông tin sản phẩm dựa trên ID
-        /// </summary>
-        [HttpPut("cap-nhat/{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+
+        // POST: api/san-pham/them-moi
+        [Authorize(Roles = "Admin")]
+        [HttpPost("them-moi")]
+        public async Task<ActionResult<Product>> PostProduct([FromBody] CreateProductRequest request)
         {
-            if (id != product.Id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("ID sản phẩm không khớp.");
+                return BadRequest(ModelState);
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            var product = new Product
+            {
+                Name = request.Name,
+                Price = request.Price,
+                OriginalPrice = request.OriginalPrice,
+                Description = request.Description,
+                ImageUrl = request.ImageUrl,
+                BrandId = request.BrandId
+            };
+
+            try
+            {
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể lưu sản phẩm mới.", error = ex.Message });
+            }
+        }
+        // PUT: api/san-pham/cap-nhat/{id}
+        [Authorize(Roles = "Admin")]
+        [HttpPut("cap-nhat/{id}")]
+        public async Task<IActionResult> PutProduct(int id, [FromBody] UpdateProductRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound("Không tìm thấy sản phẩm.");
+            }
+
+            product.Name = request.Name;
+            product.Price = request.Price;
+            product.OriginalPrice = request.OriginalPrice;
+            product.Description = request.Description;
+            product.ImageUrl = request.ImageUrl;
+            product.BrandId = request.BrandId;
 
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok("Cập nhật sản phẩm thành công.");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateException ex)
             {
-                if (!ProductExists(id))
-                {
-                    return NotFound("Không tìm thấy sản phẩm để cập nhật.");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Lỗi đồng bộ dữ liệu. Vui lòng thử lại.");
-                }
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể cập nhật sản phẩm.", error = ex.Message });
             }
-            catch (DbUpdateException)
-            {
-                ModelState.AddModelError("", "Không thể lưu thay đổi. Vui lòng thử lại sau.");
-            }
-
-            return Ok("Cập nhật sản phẩm thành công.");
-        }
-
-        // POST: api/san-pham/them-moi
-        /// <summary>
-        /// Thêm một sản phẩm mới
-        /// </summary>
-        [HttpPost("them-moi")]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    _context.Products.Add(product);
-                    await _context.SaveChangesAsync();
-                    return CreatedAtAction("GetProduct", new { id = product.Id }, product);
-                }
-            }
-            catch (DbUpdateException)
-            {
-                ModelState.AddModelError("", "Không thể lưu thay đổi. Vui lòng thử lại sau.");
-            }
-
-            return BadRequest(ModelState);
         }
 
         // DELETE: api/san-pham/xoa/{id}
-        /// <summary>
-        /// Xóa một sản phẩm theo ID
-        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("xoa/{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -159,37 +182,156 @@ namespace QuanLyCuaHangMyPham.Controllers
                 await _context.SaveChangesAsync();
                 return Ok("Xóa sản phẩm thành công.");
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                ModelState.AddModelError("", "Không thể xóa sản phẩm. Vui lòng thử lại sau.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể xóa sản phẩm.", error = ex.Message });
             }
-
-            return BadRequest(ModelState);
         }
 
-        // GET: api/san-pham/tim-kiem
-        /// <summary>
-        /// Tìm kiếm sản phẩm theo từ khóa
-        /// </summary>
-        [HttpGet("tim-kiem")]
-        public async Task<ActionResult<IEnumerable<Product>>> SearchProducts([FromQuery] string keyword)
+        // API Lấy sản phẩm bán chạy nhất
+        [HttpGet("ban-chay-nhat")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetBestSellingProducts([FromQuery] BestSellingProductsRequest request)
         {
-            if (string.IsNullOrEmpty(keyword))
+            var bestSellers = await _context.Products
+                .Include(p => p.OrderDetails)
+                .OrderByDescending(p => p.OrderDetails.Sum(od => od.Quantity))
+                .Take(request.Top)
+                .ToListAsync();
+
+            return Ok(bestSellers);
+        }
+
+        // API Lấy sản phẩm tương tự dựa trên danh mục
+        [HttpGet("tuong-tu/{productId}")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetSimilarProducts(int productId, [FromQuery] SimilarProductsRequest request)
+        {
+            var product = await _context.Products
+                .Include(p => p.Categories)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+            if (product == null || product.Categories == null || !product.Categories.Any())
+            {
+                return NotFound("Không tìm thấy sản phẩm hoặc sản phẩm không có danh mục.");
+            }
+
+            var categoryIds = product.Categories.Select(c => c.Id).ToList();
+            var similarProducts = await _context.Products
+                .Include(p => p.Categories)
+                .Where(p => p.Id != productId && p.Categories.Any(c => categoryIds.Contains(c.Id)))
+                .Take(request.Top)
+                .ToListAsync();
+
+            return Ok(similarProducts);
+        }
+        // API Tìm kiếm sản phẩm theo từ khóa
+        [HttpGet("tim-kiem")]
+        public async Task<ActionResult<IEnumerable<Product>>> SearchProducts([FromQuery] SearchProductsRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Keyword))
             {
                 return BadRequest("Hãy nhập từ khóa tìm kiếm.");
             }
 
-            var products = await _context.Products
-                .Where(p => p.Name.Contains(keyword))
-                .ToListAsync();
+            var products = _context.Products
+                .Where(p => p.Name.Contains(request.Keyword))
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize);
 
-            return Ok(products);
+            var totalCount = await _context.Products.CountAsync(p => p.Name.Contains(request.Keyword));
+            var pagedProducts = await products.ToListAsync();
+
+            return Ok(new
+            {
+                DanhSachSanPham = pagedProducts,
+                TongSoSanPham = totalCount,
+                SoTrang = request.PageNumber,
+                SoSanPhamMoiTrang = request.PageSize
+            });
         }
 
         // Kiểm tra xem sản phẩm có tồn tại không
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.Id == id);
+        }
+        // Request cho API thêm mới sản phẩm
+        public class CreateProductRequest
+        {
+            [Required(ErrorMessage = "Tên sản phẩm là bắt buộc.")]
+            public string Name { get; set; }
+
+            [Required(ErrorMessage = "Giá là bắt buộc.")]
+            [Range(0, double.MaxValue, ErrorMessage = "Giá phải là số dương.")]
+            public decimal Price { get; set; }
+
+            [Range(0, double.MaxValue, ErrorMessage = "Giá gốc phải là số dương.")]
+            public decimal OriginalPrice { get; set; }
+
+            public string? Description { get; set; }
+            public string? ImageUrl { get; set; }
+            public int? BrandId { get; set; }
+        }
+
+        // Request cho API cập nhật sản phẩm
+        public class UpdateProductRequest
+        {
+            [Required(ErrorMessage = "Tên sản phẩm là bắt buộc.")]
+            public string Name { get; set; }
+
+            [Required(ErrorMessage = "Giá là bắt buộc.")]
+            [Range(0, double.MaxValue, ErrorMessage = "Giá phải là số dương.")]
+            public decimal Price { get; set; }
+
+            [Range(0, double.MaxValue, ErrorMessage = "Giá gốc phải là số dương.")]
+            public decimal OriginalPrice { get; set; }
+
+            public string? Description { get; set; }
+            public string? ImageUrl { get; set; }
+            public int? BrandId { get; set; }
+        }
+
+        // Request cho API lọc sản phẩm
+        public class FilterProductsRequest
+        {
+            public decimal? MinPrice { get; set; }
+            public decimal? MaxPrice { get; set; }
+            public int? MinStock { get; set; }
+            public int? MaxStock { get; set; }
+            public bool? IsOnSale { get; set; }
+            public int? BrandId { get; set; }
+
+            [Range(1, int.MaxValue, ErrorMessage = "Số trang phải lớn hơn 0.")]
+            public int PageNumber { get; set; } = 1;
+
+            [Range(1, int.MaxValue, ErrorMessage = "Số sản phẩm mỗi trang phải lớn hơn 0.")]
+            public int PageSize { get; set; } = 10;
+        }
+
+        // Request cho API tìm kiếm sản phẩm
+        public class SearchProductsRequest
+        {
+            [Required(ErrorMessage = "Vui lòng nhập từ khóa tìm kiếm.")]
+            public string Keyword { get; set; }
+
+            [Range(1, int.MaxValue, ErrorMessage = "Số trang phải lớn hơn 0.")]
+            public int PageNumber { get; set; } = 1;
+
+            [Range(1, int.MaxValue, ErrorMessage = "Số sản phẩm mỗi trang phải lớn hơn 0.")]
+            public int PageSize { get; set; } = 10;
+        }
+
+        // Request cho API lấy sản phẩm tương tự
+        public class SimilarProductsRequest
+        {
+            [Range(1, int.MaxValue, ErrorMessage = "Số lượng sản phẩm tương tự phải lớn hơn 0.")]
+            public int Top { get; set; } = 5;
+        }
+
+        // Request cho API lấy sản phẩm bán chạy nhất
+        public class BestSellingProductsRequest
+        {
+            [Range(1, int.MaxValue, ErrorMessage = "Số lượng sản phẩm bán chạy nhất phải lớn hơn 0.")]
+            public int Top { get; set; } = 10;
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyCuaHangMyPham.Data;
 
@@ -11,9 +12,11 @@ using QuanLyCuaHangMyPham.Data;
 namespace QuanLyCuaHangMyPham.Migrations
 {
     [DbContext(typeof(QuanLyCuaHangMyPhamContext))]
-    partial class QuanLyCuaHangMyPhamContextModelSnapshot : ModelSnapshot
+    [Migration("20241105064625_Lan7")]
+    partial class Lan7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1173,7 +1176,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Admins_AspNetUsers_user_id");
+                        .HasConstraintName("FK__Admins__user_id__0D7A0286");
 
                     b.Navigation("User");
                 });

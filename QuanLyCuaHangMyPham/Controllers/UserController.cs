@@ -76,19 +76,47 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return Conflict("Tên đăng nhập đã tồn tại.");
             }
 
-            // Tạo mã OTP và lưu trữ trong cache
+            // Generate OTP and send email
             var otp = _emailService.GenerateOTP();
             _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5));
             _cache.Set(request.Email + "_data", request, TimeSpan.FromMinutes(5));
-            // Lưu thông tin đăng ký vào database với trạng thái "chờ xác nhận"
-            
-            // Gửi email OTP
+
+            // Send OTP email
             var subject = "Xác thực đăng ký tài khoản của bạn";
-            var message = $"Vui lòng sử dụng mã OTP sau để đăng ký tài khoản của bạn: {otp}.\n" +
-                          "Lưu ý: Mã OTP chỉ có hiệu lực trong vòng 5 phút.";
+            var message = $"Vui lòng sử dụng mã OTP sau để đăng ký tài khoản của bạn: {otp}.\nLưu ý: Mã OTP chỉ có hiệu lực trong vòng 5 phút.";
             await _emailService.SendEmailAsync(request.Email, subject, message);
 
             return Ok("Vui lòng kiểm tra email của bạn để xác thực đăng ký.");
+        }
+
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequest request)
+        {
+            // Kiểm tra xem email có hợp lệ không
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OtpPurpose))
+            {
+                return BadRequest("Email và mục đích là bắt buộc.");
+            }
+
+            // Kiểm tra xem thông tin người dùng có tồn tại trong cache không
+            if (!_cache.TryGetValue(request.Email + "_data", out RegisterRequest cachedRequest))
+            {
+                return BadRequest("Thông tin người dùng không tồn tại hoặc đã hết hạn.");
+            }
+
+            // Tạo mã OTP mới
+            var otp = _emailService.GenerateOTP();
+            _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5)); // Lưu mã OTP mới vào cache
+
+            // Gửi email chứa mã OTP mới
+            var subject = request.OtpPurpose == "register"
+                    ? "Xác thực đăng ký tài khoản của bạn"
+                    : "Mã OTP để khôi phục mật khẩu";
+            var message = $"Vui lòng sử dụng mã OTP sau để {(request.OtpPurpose == "register" ? "đăng ký tài khoản của bạn" : "khôi phục mật khẩu của bạn")}: {otp}.\nLưu ý: Mã OTP chỉ có hiệu lực trong vòng 5 phút.";
+
+            await _emailService.SendEmailAsync(request.Email, subject, message);
+
+            return Ok("Mã OTP đã được gửi lại. Vui lòng kiểm tra email của bạn.");
         }
 
         // Xác thực OTP dùng chung cho cả đăng ký và quên mật khẩu
@@ -148,11 +176,25 @@ namespace QuanLyCuaHangMyPham.Controllers
                             // Gán vai trò "Customer"
                             await _userManager.AddToRoleAsync(user, "Customer");
 
+                            // Tạo bản ghi Customer tương ứng
+                            var customer = new Customer
+                            {
+                                UserId = user.Id,
+                                Address = cachedRequest.Address,
+                                TotalSpending = 0, // Giá trị mặc định
+                                MembershipLevelId = 1, // Mức thành viên mặc định
+                                CreatedAt = DateTime.Now
+                            };
+
+                            // Lưu bản ghi Customer vào cơ sở dữ liệu
+                            _context.Customers.Add(customer);
+                            await _context.SaveChangesAsync();
+
                             // Xóa thông tin đăng ký khỏi cache sau khi tạo tài khoản thành công
                             _cache.Remove(request.Email + "_data");
                             _logger.LogInformation($"User registered successfully for {request.Email}, removed cached data.");
 
-                            return Ok("Xác thực thành công. Tài khoản của bạn đã được tạo.");
+                            return Ok("Xác thực thành công. Tài khoản của bạn đã được tạo và thông tin khách hàng đã được thêm.");
                         }
                         else
                         {
@@ -411,16 +453,25 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest(new { message = "Mật khẩu mới và mật khẩu xác nhận không khớp." });
             }
 
+            // Lấy thông tin UserId từ token JWT
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
                 return Unauthorized("Người dùng chưa được xác thực.");
             }
 
+            // Tìm người dùng dựa trên UserId
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound("Không tìm thấy người dùng.");
+            }
+
+            // Kiểm tra mật khẩu hiện tại có khớp hay không
+            var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, request.CurrentPassword);
+            if (!isCurrentPasswordValid)
+            {
+                return BadRequest(new { message = "Mật khẩu hiện tại không chính xác." });
             }
 
             // Thực hiện đổi mật khẩu
@@ -472,6 +523,29 @@ namespace QuanLyCuaHangMyPham.Controllers
             if (request.Role == "Admin" || request.Role == "Staff")
             {
                 await _userManager.AddToRoleAsync(user, request.Role);
+
+                // Tạo bản ghi tương ứng trong bảng Staff khi vai trò là Staff
+                if (request.Role == "Staff")
+                {
+                    var staff = new Staff
+                    {
+                        UserId = user.Id,
+                        Position = "Hỗ trợ khách hàng", // hoặc giá trị từ yêu cầu
+                        HireDate = DateTime.Now // ngày thuê hiện tại
+                    };
+                    _context.Staff.Add(staff);
+                }
+                else if (request.Role == "Admin")
+                {
+                    var admin = new Admin
+                    {
+                        UserId = user.Id,
+                        RoleDescription = "Quản trị viên cấp cao" // hoặc mô tả vai trò phù hợp
+                    };
+                    _context.Admins.Add(admin);
+                }
+
+                await _context.SaveChangesAsync();
             }
             else
             {
@@ -688,13 +762,19 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             [Required(ErrorMessage = "Email là bắt buộc")]
             [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+            [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Email phải chứa ký tự '@'.")]
             public string Email { get; set; }
 
             [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
+            [MinLength(6, ErrorMessage = "Tên đăng nhập phải từ 6 đến 24 ký tự.")]
+            [MaxLength(24, ErrorMessage = "Tên đăng nhập phải từ 6 đến 24 ký tự.")]
+            [RegularExpression(@"^(?!.*[._])(?!.*\s)[a-zA-Z0-9]{6,24}$", ErrorMessage = "Tên đăng nhập không được có khoảng trắng, ký tự đặc biệt, dấu chấm hoặc dấu gạch dưới.")]
             public string Username { get; set; }
 
             [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
-            [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự")]
+            [MinLength(8, ErrorMessage = "Vui lòng nhập mật khẩu dài từ 8 đến 32 ký tự.")]
+            [MaxLength(32, ErrorMessage = "Vui lòng nhập mật khẩu dài từ 8 đến 32 ký tự.")]
+            [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$", ErrorMessage = "Mật khẩu phải có ít nhất một ký tự chữ hoa, một chữ số và một ký tự đặc biệt.")]
             public string Password { get; set; }
 
             [Required(ErrorMessage = "Xác nhận mật khẩu là bắt buộc")]
@@ -702,21 +782,36 @@ namespace QuanLyCuaHangMyPham.Controllers
             public string ConfirmPassword { get; set; }
 
             [Required(ErrorMessage = "Họ là bắt buộc")]
+            [MinLength(2, ErrorMessage = "Họ phải từ 2 đến 40 ký tự.")]
+            [MaxLength(40, ErrorMessage = "Họ phải từ 2 đến 40 ký tự.")]
             public string LastName { get; set; }
 
             [Required(ErrorMessage = "Tên là bắt buộc")]
+            [MinLength(2, ErrorMessage = "Tên phải từ 2 đến 40 ký tự.")]
+            [MaxLength(40, ErrorMessage = "Tên phải từ 2 đến 40 ký tự.")]
             public string FirstName { get; set; }
 
             [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+            [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Số điện thoại phải bao gồm 10 chữ số từ 0 đến 9.")]
             public string Phone { get; set; }
 
             public string Address { get; set; } // Địa chỉ khách hàng
         }
 
+        public class ResendOtpRequest
+        {
+            [Required(ErrorMessage = "Vui lòng cung cấp email.")]
+            [EmailAddress(ErrorMessage = "Email không khớp")]
+            public string Email { get; set; }
+
+            [Required(ErrorMessage = "Mục đích OTP là bắt buộc")]
+            public string OtpPurpose { get; set; } // "register" hoặc "forgot-password"
+        }
+
         public class OtpVerifyRequest
         {
-            [Required(ErrorMessage = "Email là bắt buộc")]
-            [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+            [Required(ErrorMessage = "Vui lòng cung cấp email.")]
+            [EmailAddress(ErrorMessage = "Email không khớp")]
             public string Email { get; set; }
 
             [Required(ErrorMessage = "Mã OTP là bắt buộc")]
@@ -728,23 +823,26 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         public class ForgotPasswordRequest
         {
-            [Required(ErrorMessage = "Email là bắt buộc")]
-            [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+            [Required(ErrorMessage = "Vui lòng cung cấp email.")]
+            [EmailAddress(ErrorMessage = "Email không hợp lệ. Vui lòng nhập một địa chỉ email đúng định dạng.")]
             public string Email { get; set; }
         }
 
         public class ResetPasswordRequest
         {
-            [Required(ErrorMessage = "Email là bắt buộc")]
-            [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+            [Required(ErrorMessage = "Vui lòng cung cấp email.")]
+            [EmailAddress(ErrorMessage = "Email không hợp lệ. Vui lòng nhập một địa chỉ email đúng định dạng.")]
             public string Email { get; set; }
 
-            [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
-            [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự")]
+            [Required(ErrorMessage = "Vui lòng nhập mật khẩu mới.")]
+            [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự.")]
+            [MaxLength(32, ErrorMessage = "Mật khẩu không được vượt quá 32 ký tự.")]
+            [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$",
+                ErrorMessage = "Mật khẩu phải có ít nhất một chữ cái viết hoa, một chữ số và một ký tự đặc biệt.")]
             public string NewPassword { get; set; }
 
-            [Required(ErrorMessage = "Xác nhận mật khẩu mới là bắt buộc")]
-            [Compare("NewPassword", ErrorMessage = "Mật khẩu và xác nhận mật khẩu không khớp")]
+            [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu mới.")]
+            [Compare("NewPassword", ErrorMessage = "Mật khẩu và xác nhận mật khẩu không khớp.")]
             public string ConfirmPassword { get; set; }
         }
 
@@ -755,55 +853,67 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
         public class UpdateUserInfoRequest
         {
-            [Required(ErrorMessage = "Họ là bắt buộc")]
+            [Required(ErrorMessage = "Vui lòng cung cấp họ.")]
+            [StringLength(40, MinimumLength = 2, ErrorMessage = "Họ phải từ 2 đến 40 ký tự.")]
             public string LastName { get; set; }
 
-            [Required(ErrorMessage = "Tên là bắt buộc")]
+            [Required(ErrorMessage = "Vui lòng cung cấp tên.")]
+            [StringLength(40, MinimumLength = 2, ErrorMessage = "Tên phải từ 2 đến 40 ký tự.")]
             public string FirstName { get; set; }
 
-            [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+            [Required(ErrorMessage = "Vui lòng cung cấp số điện thoại.")]
+            [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Số điện thoại không hợp lệ. Số điện thoại phải bao gồm 10 chữ số.")]
             public string Phone { get; set; }
 
+            [StringLength(255, ErrorMessage = "Địa chỉ không được vượt quá 255 ký tự.")]
             public string Address { get; set; } // Địa chỉ người dùng
         }
         public class ChangePasswordRequest
         {
-            [Required(ErrorMessage = "Mật khẩu hiện tại là bắt buộc")]
+            [Required(ErrorMessage = "Vui lòng cung cấp mật khẩu hiện tại.")]
             public string CurrentPassword { get; set; }
 
-            [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
-            [MinLength(8, ErrorMessage = "Mật khẩu mới phải có ít nhất 8 ký tự")]
+            [Required(ErrorMessage = "Vui lòng cung cấp mật khẩu mới.")]
+            [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,32}$", ErrorMessage = "Mật khẩu mới phải từ 8-32 ký tự, bao gồm ít nhất một ký tự in hoa, một chữ số và một ký tự đặc biệt.")]
             public string NewPassword { get; set; }
 
-            [Required(ErrorMessage = "Xác nhận mật khẩu mới là bắt buộc")]
+            [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu mới.")]
+            [Compare("NewPassword", ErrorMessage = "Mật khẩu mới và xác nhận mật khẩu không khớp.")]
             public string ConfirmNewPassword { get; set; }
         }
         // Model cho API tạo người dùng mới
         public class CreateUserRequest
         {
-            [Required(ErrorMessage = "Email là bắt buộc")]
-            [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+            [Required(ErrorMessage = "Vui lòng cung cấp email.")]
+            [EmailAddress(ErrorMessage = "Email phải hợp lệ, bao gồm '@' và tên miền.")]
             public string Email { get; set; }
 
-            [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
+            [Required(ErrorMessage = "Tên đăng nhập là bắt buộc.")]
+            [MinLength(6, ErrorMessage = "Tên đăng nhập phải có từ 6 đến 24 ký tự.")]
+            [MaxLength(24, ErrorMessage = "Tên đăng nhập phải có từ 6 đến 24 ký tự.")]
+            [RegularExpression("^[a-zA-Z0-9]{6,24}$", ErrorMessage = "Tên đăng nhập không được có khoảng trắng, ký tự đặc biệt, dấu chấm, hoặc dấu gạch dưới.")]
             public string Username { get; set; }
 
-            [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
-            [MinLength(8, ErrorMessage = "Mật khẩu phải có ít nhất 8 ký tự")]
+            [Required(ErrorMessage = "Mật khẩu là bắt buộc.")]
+            [StringLength(32, MinimumLength = 8, ErrorMessage = "Vui lòng nhập mật khẩu dài 8-32 ký tự.")]
+            [RegularExpression("^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z0-9@$!%*?&]{8,32}$", ErrorMessage = "Mật khẩu phải có ít nhất một ký tự hoa, một chữ số, và một ký tự đặc biệt.")]
             public string Password { get; set; }
 
-            [Required(ErrorMessage = "Họ là bắt buộc")]
+            [Required(ErrorMessage = "Họ là bắt buộc.")]
+            [StringLength(40, MinimumLength = 2, ErrorMessage = "Họ phải có từ 2 đến 40 ký tự.")]
             public string LastName { get; set; }
 
-            [Required(ErrorMessage = "Tên là bắt buộc")]
+            [Required(ErrorMessage = "Tên là bắt buộc.")]
+            [StringLength(40, MinimumLength = 2, ErrorMessage = "Tên phải có từ 2 đến 40 ký tự.")]
             public string FirstName { get; set; }
 
-            [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+            [Required(ErrorMessage = "Số điện thoại là bắt buộc.")]
+            [RegularExpression("^[0-9]{10}$", ErrorMessage = "Số điện thoại phải gồm 10 chữ số từ 0 đến 9.")]
             public string Phone { get; set; }
 
             public string Address { get; set; }
 
-            [Required(ErrorMessage = "Vai trò là bắt buộc")]
+            [Required(ErrorMessage = "Vai trò là bắt buộc.")]
             [RegularExpression("^(Admin|Staff)$", ErrorMessage = "Vai trò chỉ có thể là 'Admin' hoặc 'Staff'.")]
             public string Role { get; set; }
         }
@@ -820,8 +930,8 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
         public class ChangeEmailRequest
         {
-            [Required]
-            [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
+            [Required(ErrorMessage = "Vui lòng cung cấp email mới.")]
+            [EmailAddress(ErrorMessage = "Email phải hợp lệ, bao gồm '@' và tên miền.")]
             public string NewEmail { get; set; }
         }
         public class UnlockUserRequest

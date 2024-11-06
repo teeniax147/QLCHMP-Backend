@@ -59,4 +59,9 @@ public partial class Product
                 : (decimal?)null;
         }
     }
+    // Phương thức để lấy tổng số lượng tồn kho
+    public int GetCurrentStock()
+    {
+        return Inventories.Sum(i => i.QuantityInStock);
+    }
 }

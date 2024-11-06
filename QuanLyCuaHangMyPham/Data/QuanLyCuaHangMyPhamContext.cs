@@ -107,10 +107,12 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            // Liên kết với ApplicationUser thay vì bảng User
-            entity.HasOne(d => d.User).WithMany(p => p.Admins)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Admins__user_id__48CFD27E");
+            // Khóa ngoại liên kết đến cột `Id` của `AspNetUsers`
+            entity.HasOne(d => d.User)
+          .WithMany(p => p.Admins)
+          .HasForeignKey(d => d.UserId)
+          .OnDelete(DeleteBehavior.Cascade)
+          .HasConstraintName("FK_Admins_AspNetUsers_user_id");
         });
 
         modelBuilder.Entity<BeautyBlog>(entity =>
@@ -338,19 +340,20 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("total_spending");
 
-            // Cấu hình UserId
             entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            // Thiết lập khóa ngoại liên kết tới AspNetUsers
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Customers)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Customers_AspNetUsers_user_id");
 
             // Thiết lập quan hệ với MembershipLevel
             entity.HasOne(d => d.MembershipLevel).WithMany(p => p.Customers)
                 .HasForeignKey(d => d.MembershipLevelId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK__Customers__membe__45F365D3");
-
-            // Thiết lập quan hệ với ApplicationUser
-            entity.HasOne(d => d.User).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Customers__user___44FF419A");
         });
 
         modelBuilder.Entity<Favorite>(entity =>
@@ -829,13 +832,14 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasColumnType("nvarchar(max)")
                 .HasColumnName("position");
 
-            // Thuộc tính UserId để liên kết với ApplicationUser
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            // Thiết lập mối quan hệ với ApplicationUser
-            entity.HasOne(d => d.User).WithMany(p => p.Staffs)
+            // Khóa ngoại liên kết đến cột Id của AspNetUsers
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Staffs)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Staff__user_id__4CA06362");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Staff_AspNetUsers_user_id");
         });
 
         OnModelCreatingPartial(modelBuilder);
