@@ -25,7 +25,30 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // GET: api/san-pham/danh-sach
         [HttpGet("danh-sach")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] FilterProductsRequest request)
+        public async Task<ActionResult<IEnumerable<Product>>> GetAllProducts(int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Số trang và số sản phẩm mỗi trang phải lớn hơn 0.");
+            }
+
+            var totalProducts = await _context.Products.CountAsync();
+            var products = await _context.Products
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                DanhSachSanPham = products,
+                TongSoSanPham = totalProducts,
+                SoTrang = pageNumber,
+                SoSanPhamMoiTrang = pageSize
+            });
+        }
+        // GET: api/san-pham/loc
+        [HttpGet("loc")]
+        public async Task<ActionResult<IEnumerable<Product>>> FilterProducts([FromQuery] FilterProductsRequest request)
         {
             if (request.PageNumber <= 0 || request.PageSize <= 0)
             {
@@ -69,8 +92,19 @@ namespace QuanLyCuaHangMyPham.Controllers
                 products = products.Where(p => p.BrandId == request.BrandId.Value);
             }
 
+            // Sắp xếp theo giá
+            if (!string.IsNullOrEmpty(request.SortByPrice))
+            {
+                products = request.SortByPrice.ToLower() switch
+                {
+                    "asc" => products.OrderBy(p => p.Price),
+                    "desc" => products.OrderByDescending(p => p.Price),
+                    _ => products
+                };
+            }
+
             // Phân trang
-            var totalProducts = await products.CountAsync();
+            var totalFilteredProducts = await products.CountAsync();
             var pagedProducts = await products
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
@@ -79,9 +113,39 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok(new
             {
                 DanhSachSanPham = pagedProducts,
-                TongSoSanPham = totalProducts,
+                TongSoSanPham = totalFilteredProducts,
                 SoTrang = request.PageNumber,
                 SoSanPhamMoiTrang = request.PageSize
+            });
+        }
+        // GET: api/san-pham/theo-danh-muc/{categoryId}
+        [HttpGet("theo-danh-muc/{categoryId}")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(int categoryId, int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Số trang và số sản phẩm mỗi trang phải lớn hơn 0.");
+            }
+
+            // Lọc sản phẩm theo categoryId
+            var products = _context.Products
+                .Include(p => p.Inventories)
+                .Include(p => p.Promotions)
+                .Where(p => p.Categories.Any(c => c.Id == categoryId))
+                .AsQueryable();
+
+            var totalProducts = await products.CountAsync();
+            var pagedProducts = await products
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                DanhSachSanPham = pagedProducts,
+                TongSoSanPham = totalProducts,
+                SoTrang = pageNumber,
+                SoSanPhamMoiTrang = pageSize
             });
         }
 
@@ -293,18 +357,15 @@ namespace QuanLyCuaHangMyPham.Controllers
         // Request cho API lọc sản phẩm
         public class FilterProductsRequest
         {
+            public int PageNumber { get; set; } = 1;
+            public int PageSize { get; set; } = 10;
             public decimal? MinPrice { get; set; }
             public decimal? MaxPrice { get; set; }
             public int? MinStock { get; set; }
             public int? MaxStock { get; set; }
             public bool? IsOnSale { get; set; }
             public int? BrandId { get; set; }
-
-            [Range(1, int.MaxValue, ErrorMessage = "Số trang phải lớn hơn 0.")]
-            public int PageNumber { get; set; } = 1;
-
-            [Range(1, int.MaxValue, ErrorMessage = "Số sản phẩm mỗi trang phải lớn hơn 0.")]
-            public int PageSize { get; set; } = 10;
+            public string? SortByPrice { get; set; } // "asc" cho tăng dần, "desc" cho giảm dần
         }
 
         // Request cho API tìm kiếm sản phẩm
