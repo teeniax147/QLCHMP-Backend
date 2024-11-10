@@ -34,6 +34,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             var totalProducts = await _context.Products.CountAsync();
             var products = await _context.Products
+                
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -56,6 +57,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             }
 
             var products = _context.Products
+                .Include(p => p.Brand)
                 .Include(p => p.Inventories)
                 .Include(p => p.Promotions)
                 .AsQueryable();
@@ -129,6 +131,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             // Lọc sản phẩm theo categoryId
             var products = _context.Products
+                .Include(p => p.Brand)
                 .Include(p => p.Inventories)
                 .Include(p => p.Promotions)
                 .Where(p => p.Categories.Any(c => c.Id == categoryId))
