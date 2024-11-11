@@ -106,7 +106,6 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok("Cập nhật bài viết thành công.");
         }
 
-
         // DELETE: api/beauty-blog/xoa/{id} - Xóa bài viết
         [Authorize(Roles = "Admin")]
         [HttpDelete("xoa/{id}")]
@@ -124,7 +123,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok("Xóa bài viết thành công.");
         }
 
-        // GET: api/beauty-blog/paged - Lấy danh sách bài viết với phân trang và tìm kiếm
+        // GET: api/beauty-blog/danh-sach-phan-trang - Lấy danh sách bài viết với phân trang và tìm kiếm
         [HttpGet("danh-sach-phan-trang")]
         public async Task<ActionResult<IEnumerable<BeautyBlog>>> GetPagedBlogs(int page = 1, int pageSize = 10, string? search = null)
         {
@@ -151,7 +150,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             });
         }
 
-        // GET: api/beauty-blog/category/{categoryId} - Lấy bài viết theo danh mục
+        // GET: api/beauty-blog/danh-muc/{categoryId} - Lấy bài viết theo danh mục
         [HttpGet("danh-muc/{categoryId}")]
         public async Task<ActionResult<IEnumerable<BeautyBlog>>> GetBlogsByCategory(int categoryId)
         {
@@ -159,11 +158,6 @@ namespace QuanLyCuaHangMyPham.Controllers
                 .Where(b => b.CategoryId == categoryId)
                 .Include(b => b.Category)
                 .ToListAsync();
-
-            if (!blogs.Any())
-            {
-                return NotFound("Không có bài viết nào trong danh mục này.");
-            }
 
             return Ok(new { Message = "Lấy danh sách bài viết theo danh mục thành công", Blogs = blogs });
         }
@@ -207,7 +201,6 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPost("len-lich")]
         public async Task<IActionResult> ScheduleBlogPost([FromBody] BeautyBlogScheduleRequest request)
         {
-            // Kiểm tra xem CategoryId có hợp lệ không
             if (!await _context.Categories.AnyAsync(c => c.Id == request.CategoryId))
             {
                 return BadRequest("Danh mục không tồn tại.");
@@ -253,7 +246,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             return _context.BeautyBlogs.Any(b => b.Id == id);
         }
-        // Lớp yêu cầu để tạo một bài viết mới
+
         public class BeautyBlogCreateRequest
         {
             [Required(ErrorMessage = "Tiêu đề là bắt buộc.")]
@@ -271,7 +264,6 @@ namespace QuanLyCuaHangMyPham.Controllers
             public DateTime? ScheduledPublishDate { get; set; }
         }
 
-        // Lớp yêu cầu để cập nhật bài viết
         public class BeautyBlogUpdateRequest
         {
             [Required(ErrorMessage = "ID là bắt buộc.")]
@@ -290,7 +282,6 @@ namespace QuanLyCuaHangMyPham.Controllers
             public int? CategoryId { get; set; }
         }
 
-        // Lớp yêu cầu để lên lịch một bài viết
         public class BeautyBlogScheduleRequest
         {
             [Required(ErrorMessage = "Tiêu đề là bắt buộc.")]
