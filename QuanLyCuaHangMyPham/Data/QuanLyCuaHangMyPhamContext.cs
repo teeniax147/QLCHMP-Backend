@@ -372,7 +372,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
 
             entity.HasOne(d => d.User).WithMany(p => p.Favorites)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Favorites__user___06CD04F7");
+                .HasConstraintName("FK_Favorites_User");
         });
 
         modelBuilder.Entity<Inventory>(entity =>

@@ -360,22 +360,6 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
-    "Method": "ApplyCouponToCart",
-    "RelativePath": "api/Carts/apply-coupon",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BApplyCouponRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
     "Method": "ClearCart",
     "RelativePath": "api/Carts/clear",
     "HttpMethod": "DELETE",
@@ -392,6 +376,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "PreviewOrder",
+    "RelativePath": "api/Carts/preview",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BPreviewOrderRequest",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -1220,13 +1220,7 @@
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.OrdersController\u002BCreateOrderRequest",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

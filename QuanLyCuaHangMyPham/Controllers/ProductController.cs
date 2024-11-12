@@ -62,7 +62,34 @@ namespace QuanLyCuaHangMyPham.Controllers
                 .Include(p => p.Promotions)
                 .AsQueryable();
 
-            // Lọc theo giá
+            // Kiểm tra nếu không có bộ lọc nào được áp dụng
+            bool noFiltersApplied = !request.MinPrice.HasValue &&
+                                    !request.MaxPrice.HasValue &&
+                                    !request.MinStock.HasValue &&
+                                    !request.MaxStock.HasValue &&
+                                    !request.IsOnSale.HasValue &&
+                                    !request.BrandId.HasValue &&
+                                    string.IsNullOrEmpty(request.SortByPrice);
+
+            if (noFiltersApplied)
+            {
+                // Nếu không có bộ lọc, trả về danh sách đầy đủ (tương tự GetAllProducts)
+                var totalProducts = await products.CountAsync();
+                var pagedProducts = await products
+                    .Skip((request.PageNumber - 1) * request.PageSize)
+                    .Take(request.PageSize)
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    DanhSachSanPham = pagedProducts,
+                    TongSoSanPham = totalProducts,
+                    SoTrang = request.PageNumber,
+                    SoSanPhamMoiTrang = request.PageSize
+                });
+            }
+
+            // Áp dụng các bộ lọc nếu có
             if (request.MinPrice.HasValue)
             {
                 products = products.Where(p => p.Price >= request.MinPrice.Value);
@@ -72,7 +99,6 @@ namespace QuanLyCuaHangMyPham.Controllers
                 products = products.Where(p => p.Price <= request.MaxPrice.Value);
             }
 
-            // Lọc theo số lượng tồn kho
             if (request.MinStock.HasValue)
             {
                 products = products.Where(p => p.Inventories.Sum(i => i.QuantityInStock) >= request.MinStock.Value);
@@ -82,39 +108,36 @@ namespace QuanLyCuaHangMyPham.Controllers
                 products = products.Where(p => p.Inventories.Sum(i => i.QuantityInStock) <= request.MaxStock.Value);
             }
 
-            // Lọc theo trạng thái khuyến mãi
             if (request.IsOnSale.HasValue)
             {
                 products = products.Where(p => p.Promotions.Any(pr => pr.StartDate <= DateTime.Now && pr.EndDate >= DateTime.Now) == request.IsOnSale.Value);
             }
 
-            // Lọc theo thương hiệu
             if (request.BrandId.HasValue)
             {
                 products = products.Where(p => p.BrandId == request.BrandId.Value);
             }
 
-            // Sắp xếp theo giá
             if (!string.IsNullOrEmpty(request.SortByPrice))
             {
                 products = request.SortByPrice.ToLower() switch
                 {
-                    "asc" => products.OrderBy(p => p.Price),
-                    "desc" => products.OrderByDescending(p => p.Price),
+                    "asc" => products.Where(p => p.Price != null).OrderBy(p => p.Price),
+                    "desc" => products.Where(p => p.Price != null).OrderByDescending(p => p.Price),
                     _ => products
                 };
             }
 
-            // Phân trang
+            // Phân trang sau khi áp dụng bộ lọc
             var totalFilteredProducts = await products.CountAsync();
-            var pagedProducts = await products
+            var pagedFilteredProducts = await products
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync();
 
             return Ok(new
             {
-                DanhSachSanPham = pagedProducts,
+                DanhSachSanPham = pagedFilteredProducts,
                 TongSoSanPham = totalFilteredProducts,
                 SoTrang = request.PageNumber,
                 SoSanPhamMoiTrang = request.PageSize

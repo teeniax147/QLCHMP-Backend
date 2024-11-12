@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using QuanLyCuaHangMyPham.Data;
 using QuanLyCuaHangMyPham.Models;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -18,10 +21,11 @@ namespace QuanLyCuaHangMyPham.Controllers
     public class CartsController : ControllerBase
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
-
-        public CartsController(QuanLyCuaHangMyPhamContext context)
+        private readonly IMemoryCache _cache;  // Khai báo _cache
+        public CartsController(QuanLyCuaHangMyPhamContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         [Authorize(Roles = "Customer")]
@@ -80,6 +84,78 @@ namespace QuanLyCuaHangMyPham.Controllers
             {
                 return StatusCode(500, new { message = "Lỗi khi lấy chi tiết giỏ hàng.", error = ex.Message });
             }
+        }
+        [HttpPost("preview")]
+        public async Task<IActionResult> PreviewOrder([FromBody] PreviewOrderRequest request)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (customer == null)
+            {
+                return BadRequest("Không tìm thấy thông tin khách hàng.");
+            }
+
+            var cartItems = await _context.CartItems
+                .Include(ci => ci.Product)
+                .Where(ci => ci.Cart.CustomerId == customer.CustomerId)
+                .ToListAsync();
+
+            if (!cartItems.Any())
+            {
+                return BadRequest("Giỏ hàng trống.");
+            }
+
+            decimal originalTotalAmount = cartItems.Sum(ci => ci.Product.Price * ci.Quantity);
+            decimal discountAmount = 0;
+
+            if (!string.IsNullOrEmpty(request.CouponCode))
+            {
+                var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == request.CouponCode);
+                if (coupon != null)
+                {
+                    discountAmount = coupon.DiscountAmount ?? (coupon.DiscountPercentage.HasValue
+                        ? originalTotalAmount * (coupon.DiscountPercentage.Value / 100)
+                        : 0);
+
+                    if (coupon.MaxDiscountAmount.HasValue && discountAmount > coupon.MaxDiscountAmount.Value)
+                    {
+                        discountAmount = coupon.MaxDiscountAmount.Value;
+                    }
+                }
+            }
+
+            decimal shippingCost = 0;
+            if (request.ShippingCompanyId.HasValue)
+            {
+                var shippingCompany = await _context.ShippingCompanies
+                    .FirstOrDefaultAsync(sc => sc.Id == request.ShippingCompanyId.Value);
+
+                if (shippingCompany != null)
+                {
+                    shippingCost = shippingCompany.ShippingCost ?? 0;
+                }
+            }
+
+            decimal totalAmount = originalTotalAmount - discountAmount + shippingCost;
+
+            // Lưu dữ liệu tạm thời
+            var previewData = new
+            {
+                OriginalTotalAmount = originalTotalAmount,
+                DiscountAmount = discountAmount,
+                ShippingCost = shippingCost,
+                TotalAmount = totalAmount,
+                CouponCode = request.CouponCode,
+                ShippingCompanyId = request.ShippingCompanyId,
+                PaymentMethodId = request.PaymentMethodId,
+                ShippingAddress = request.ShippingAddress
+            };
+
+            // Lưu dữ liệu vào IMemoryCache
+            _cache.Set($"PreviewOrder:{userId}", previewData, TimeSpan.FromMinutes(30));
+
+            return Ok(previewData);
         }
         // Thêm sản phẩm vào giỏ hàng
         [HttpPost("add")]
@@ -208,27 +284,8 @@ namespace QuanLyCuaHangMyPham.Controllers
             }
         }
 
-        // Áp dụng mã giảm giá
-        // Áp dụng mã giảm giá tạm thời cho giỏ hàng
-        [HttpPost("apply-coupon")]
-        public async Task<IActionResult> ApplyCouponToCart([FromBody] ApplyCouponRequest request)
-        {
-            var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == request.CouponCode);
-            if (coupon == null || coupon.QuantityAvailable <= 0 ||
-    (coupon.StartDate.HasValue && coupon.StartDate > DateOnly.FromDateTime(DateTime.Now)) ||
-    (coupon.EndDate.HasValue && coupon.EndDate < DateOnly.FromDateTime(DateTime.Now)))
-            {
-                return BadRequest("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
-            }
+        
 
-            var discountAmount = coupon.DiscountAmount ?? 0;
-            if (coupon.DiscountPercentage.HasValue)
-            {
-                discountAmount += (coupon.DiscountPercentage.Value / 100);
-            }
-
-            return Ok(new { DiscountAmount = discountAmount });
-        }
         private async Task<Cart> GetOrCreateCartForUser(int userId)
         {
             // Lấy thông tin Customer từ UserId
@@ -272,10 +329,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             public int Quantity { get; set; }
         }
 
-        public class ApplyCouponRequest
-        {
-            public string CouponCode { get; set; }
-        }
+        
         public class RemoveFromCartRequest
         {
             public int ProductId { get; set; }
@@ -284,6 +338,13 @@ namespace QuanLyCuaHangMyPham.Controllers
         public class RemoveItemRequest
         {
             public int ProductId { get; set; } // ID sản phẩm cần xóa
+        }
+        public class PreviewOrderRequest
+        {
+            public string? CouponCode { get; set; }
+            public int? ShippingCompanyId { get; set; }
+            public int? PaymentMethodId { get; set; }
+            public string? ShippingAddress { get; set; }
         }
     }
 }
