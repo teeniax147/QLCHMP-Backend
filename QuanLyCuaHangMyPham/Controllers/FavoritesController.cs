@@ -34,9 +34,19 @@ namespace QuanLyCuaHangMyPham.Controllers
                 .Include(f => f.Product)
                 .Select(f => new
                 {
-                    f.ProductId,
-                    ProductName = f.Product.Name,
-                    f.AddedAt
+                    f.Product.Id,
+                    f.Product.Name,
+                    f.Product.Price,
+                    f.Product.OriginalPrice,
+                    f.Product.Description,
+                    f.Product.ImageUrl,
+                    f.Product.FavoriteCount,
+                    f.Product.ReviewCount,
+                    f.Product.AverageRating,
+                    f.Product.CreatedAt,
+                    f.Product.BrandId,
+                    ShockPrice = f.Product.ShockPrice, // Giá khuyến mãi (nếu có)
+                    Stock = f.Product.GetCurrentStock(), // Số lượng tồn kho
                 })
                 .ToListAsync();
 

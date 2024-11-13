@@ -168,16 +168,27 @@ namespace QuanLyCuaHangMyPham.Controllers
                         ShippingCost = previewOrder.ShippingCost,
                         DiscountApplied = previewOrder.DiscountAmount,
                         OrderDate = DateTime.Now,
-                        Status = "Pending",
-                        PaymentStatus = "Unpaid"
+                        Status = "Chờ Xác Nhận",
+                        PaymentStatus = "Chưa Thanh Toán"
                     };
 
                     _context.Orders.Add(order);
                     await _context.SaveChangesAsync();
 
+                    // Kiểm tra lại Order.Id sau khi lưu
+                    if (order.Id <= 0)
+                    {
+                        return StatusCode(500, new { Message = "Không thể tạo ID cho đơn hàng." });
+                    }
+
                     // Thêm chi tiết đơn hàng
                     foreach (var item in cartItems)
                     {
+                        if (item.Product == null)
+                        {
+                            return BadRequest("Sản phẩm không tồn tại trong giỏ hàng.");
+                        }
+
                         _context.OrderDetails.Add(new OrderDetail
                         {
                             OrderId = order.Id,
@@ -187,6 +198,8 @@ namespace QuanLyCuaHangMyPham.Controllers
                             TotalPrice = item.Quantity * item.Product.Price
                         });
                     }
+
+                    await _context.SaveChangesAsync(); // Lưu OrderDetails sau khi lưu Order
 
                     // Xóa giỏ hàng
                     _context.CartItems.RemoveRange(cartItems);
@@ -198,10 +211,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 }
                 catch (Exception ex)
                 {
-                    if (transaction.GetDbTransaction() != null && transaction.GetDbTransaction().Connection != null)
-                    {
-                        await transaction.RollbackAsync();
-                    }
+                    await transaction.RollbackAsync();
                     return StatusCode(500, new { Message = "Đã xảy ra lỗi trong quá trình tạo đơn hàng.", Error = ex.Message });
                 }
             }
