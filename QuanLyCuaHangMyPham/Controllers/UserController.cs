@@ -283,13 +283,14 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser([FromBody] LoginRequest request)
         {
+            // Tìm người dùng dựa trên tên đăng nhập hoặc email
             var user = await _userManager.FindByNameAsync(request.EmailOrUsername)
                        ?? await _userManager.FindByEmailAsync(request.EmailOrUsername);
 
             // Nếu không tìm thấy người dùng
             if (user == null)
             {
-                return Unauthorized(new { message = "Tên đăng nhập không đúng." });
+                return Unauthorized(new { message = "Tên đăng nhập hoặc email không đúng." });
             }
 
             // Nếu tìm thấy người dùng nhưng mật khẩu không đúng
@@ -298,22 +299,25 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return Unauthorized(new { message = "Mật khẩu không đúng." });
             }
 
+            // Lấy danh sách vai trò của người dùng
+            var roles = await _userManager.GetRolesAsync(user);
 
             // Tạo token JWT nếu đăng nhập thành công
             var token = GenerateJwtToken(user);
 
-            // Trả về thông báo thành công và token
+            // Trả về thông báo thành công, token và thông tin vai trò
             return Ok(new
             {
                 message = "Đăng nhập thành công.",
                 token = token,
                 userId = user.Id,
                 userName = user.UserName,
-                email = user.Email
+                email = user.Email,
+                roles = roles // Trả về danh sách vai trò của người dùng
             });
         }
 
-        
+
 
         // Gửi OTP để khôi phục mật khẩu
         [HttpPost("forgot-password")]

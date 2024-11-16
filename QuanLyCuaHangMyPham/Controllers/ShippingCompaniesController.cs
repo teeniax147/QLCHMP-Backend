@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -43,6 +44,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // PUT: api/ShippingCompany/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutShippingCompany(int id, ShippingCompanyUpdateRequest request)
         {
             if (id != request.Id)
@@ -83,6 +85,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // POST: api/ShippingCompany
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<ShippingCompany>> PostShippingCompany(ShippingCompanyCreateRequest request)
         {
             var shippingCompany = new ShippingCompany
@@ -100,6 +103,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // DELETE: api/ShippingCompany/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteShippingCompany(int id)
         {

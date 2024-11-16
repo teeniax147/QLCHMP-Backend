@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // GET: api/Inventory
         [HttpGet]
+        
         public async Task<ActionResult<IEnumerable<Inventory>>> GetInventories()
         {
             return await _context.Inventories.Include(i => i.Product).ToListAsync();
@@ -31,6 +33,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // GET: api/Inventory/{id}
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Inventory>> GetInventory(int id)
         {
             var inventory = await _context.Inventories.Include(i => i.Product).FirstOrDefaultAsync(i => i.InventoryId == id);
@@ -45,6 +48,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // POST: api/Inventory
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Inventory>> CreateInventory([FromBody] InventoryCreateRequest request)
         {
             var inventory = new Inventory
@@ -63,6 +67,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // PUT: api/Inventory/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateInventory(int id, [FromBody] InventoryUpdateRequest request)
         {
             if (id != request.InventoryId)
@@ -105,6 +110,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // DELETE: api/Inventory/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteInventory(int id)
         {
             var inventory = await _context.Inventories.FindAsync(id);

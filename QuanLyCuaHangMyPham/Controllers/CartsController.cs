@@ -27,7 +27,37 @@ namespace QuanLyCuaHangMyPham.Controllers
             _context = context;
             _cache = cache;
         }
+        [HttpGet("item-count")]
+        public async Task<IActionResult> GetCartItemCount()
+        {
+            try
+            {
+                // Lấy UserId từ token
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
+                // Lấy thông tin khách hàng từ UserId
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.UserId == userId);
+
+                if (customer == null)
+                {
+                    return NotFound("Không tìm thấy thông tin khách hàng.");
+                }
+
+                // Đếm số loại sản phẩm trong giỏ hàng
+                var itemCount = await _context.CartItems
+                    .Where(ci => ci.Cart.CustomerId == customer.CustomerId)
+                    .Select(ci => ci.ProductId) // Chọn các ID sản phẩm để đếm loại
+                    .Distinct() // Loại bỏ trùng lặp để đếm số loại sản phẩm
+                    .CountAsync();
+
+                return Ok(new { ItemCount = itemCount });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy số lượng loại sản phẩm trong giỏ hàng.", error = ex.Message });
+            }
+        }
         [Authorize(Roles = "Customer")]
         [HttpGet("details")]
         public async Task<IActionResult> GetCartDetails()
@@ -86,6 +116,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             }
         }
         [HttpPost("preview")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PreviewOrder([FromBody] PreviewOrderRequest request)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -112,7 +143,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             if (!string.IsNullOrEmpty(request.CouponCode))
             {
                 var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Code == request.CouponCode);
-                if (coupon != null)
+                if (coupon != null && coupon.QuantityAvailable > 0) // Kiểm tra số lượng còn lại của mã giảm giá
                 {
                     discountAmount = coupon.DiscountAmount ?? (coupon.DiscountPercentage.HasValue
                         ? originalTotalAmount * (coupon.DiscountPercentage.Value / 100)
@@ -123,7 +154,12 @@ namespace QuanLyCuaHangMyPham.Controllers
                         discountAmount = coupon.MaxDiscountAmount.Value;
                     }
                 }
+                else
+                {
+                    return BadRequest("Mã giảm giá không hợp lệ hoặc đã hết số lượng.");
+                }
             }
+
 
             decimal shippingCost = 0;
             if (request.ShippingCompanyId.HasValue)
@@ -158,6 +194,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok(previewData);
         }
         // Thêm sản phẩm vào giỏ hàng
+        [Authorize(Roles = "Customer")]
         [HttpPost("add")]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
@@ -194,6 +231,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return StatusCode(500, new { message = "Lỗi khi thêm sản phẩm vào giỏ hàng.", error = ex.Message });
             }
         }
+        [Authorize(Roles = "Customer")]
         [HttpPost("remove")]
         public async Task<IActionResult> RemoveFromCart([FromBody] RemoveFromCartRequest request)
         {
@@ -232,6 +270,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // Xóa sản phẩm khỏi giỏ hàng
+        [Authorize(Roles = "Customer")]
         [HttpDelete("remove-item")]
         public async Task<IActionResult> RemoveItemFromCart([FromBody] RemoveItemRequest request)
         {
@@ -264,6 +303,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
         //xóa tất cả sản phẩm trong giỏ hàng
         [HttpDelete("clear")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> ClearCart()
         {
             try

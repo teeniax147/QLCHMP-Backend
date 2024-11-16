@@ -13,8 +13,6 @@ public partial class Product
 
     public decimal OriginalPrice { get; set; }
 
-    
-
     public string? Description { get; set; }
 
     public string? ImageUrl { get; set; }

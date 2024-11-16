@@ -26,6 +26,7 @@ public partial class Coupon
     public int? QuantityAvailable { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+    
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

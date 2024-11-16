@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -21,6 +22,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // GET: api/Staff
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Staff>>> GetStaff()
         {
@@ -28,6 +30,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // GET: api/Staff/5
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Staff>> GetStaff(int id)
         {
@@ -43,6 +46,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // PUT: api/Staff/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> PutStaff(int id, StaffUpdateRequest request)
         {
             if (id != request.StaffId)
@@ -83,6 +87,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // POST: api/Staff
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Staff>> PostStaff(StaffCreateRequest request)
         {
             var staff = new Staff
@@ -100,6 +105,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // DELETE: api/Staff/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteStaff(int id)
         {
             var staff = await _context.Staff.FindAsync(id);

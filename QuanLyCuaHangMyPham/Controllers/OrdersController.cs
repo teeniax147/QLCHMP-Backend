@@ -207,7 +207,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
                     await transaction.CommitAsync();
 
-                    return Ok(new { Message = "Đơn hàng đã được tạo thành công.", OrderId = order.Id });
+                    return Ok(new { Message = "Đơn hàng đã được tạo.", OrderId = order.Id });
                 }
                 catch (Exception ex)
                 {
@@ -218,7 +218,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // Hủy đơn hàng (chỉ dành cho Customer, chỉ khi đơn hàng ở trạng thái Pending)
-        [Authorize]
+        [Authorize(Roles = "Customer")]
         [HttpPut("{orderId}/cancel")]
         public async Task<IActionResult> CancelOrder(int orderId)
         {
@@ -231,13 +231,14 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return NotFound("Không tìm thấy đơn hàng.");
             }
 
-            if (order.Status != "Pending")
+            if (order.Status != "Đang Giao Hàng" && order.Status != "Chờ Lấy Hàng"
+                && order.Status != "Đã Giao")
             {
-                return BadRequest("Chỉ có thể hủy các đơn hàng đang chờ xử lý.");
+                return BadRequest("Chỉ có thể hủy các đơn hàng đang chờ xác nhận.");
             }
 
-            order.Status = "Cancelled";
-            order.PaymentStatus = "Refunded";
+            order.Status = "Đã Hủy";
+            order.PaymentStatus = "Đã Hủy. Sẽ hoàn tiền trong 24h đối với giao dịch chuyển khoản";
             await _context.SaveChangesAsync();
 
             return Ok("Đơn hàng đã được hủy thành công.");
@@ -278,17 +279,17 @@ namespace QuanLyCuaHangMyPham.Controllers
             }
 
             // Kiểm tra trạng thái đơn hàng
-            if (order.Status == "Đang Giao Hàng" || order.Status == "Hoàn Thành")
+            if (order.Status == "Đang Giao Hàng" || order.Status == "Đã Giao")
             {
                 return BadRequest("Không thể hủy đơn hàng khi đang giao hàng hoặc đã hoàn thành.");
             }
 
             // Cập nhật trạng thái hủy đơn hàng
-            order.Status = "Cancelled";
-            order.PaymentStatus = "Refunded";
+            order.Status = "Đã Hủy";
+            order.PaymentStatus = "Đã Hủy. Sẽ hoàn tiền trong 24h đối với giao dịch chuyển khoản";
             await _context.SaveChangesAsync();
 
-            return Ok("Đơn hàng đã được hủy bởi nhân viên hoặc quản trị viên.");
+            return Ok("Đơn hàng đã được hủy bởi bên bán.");
         }
         // Lấy danh sách tất cả đơn hàng (dành cho Admin)
         [Authorize(Roles = "Admin")]

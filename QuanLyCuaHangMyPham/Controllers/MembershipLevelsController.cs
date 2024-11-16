@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // GET: api/MembershipLevels/5
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<MembershipLevel>> GetMembershipLevel(int id)
         {
             var membershipLevel = await _context.MembershipLevels.FindAsync(id);
@@ -45,6 +47,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         // PUT: api/MembershipLevels/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutMembershipLevel(int id, MembershipLevel membershipLevel)
         {
             if (id != membershipLevel.MembershipLevelId)
@@ -75,7 +78,9 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // POST: api/MembershipLevels
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<MembershipLevel>> PostMembershipLevel(MembershipLevel membershipLevel)
         {
             _context.MembershipLevels.Add(membershipLevel);
@@ -104,5 +109,6 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             return _context.MembershipLevels.Any(e => e.MembershipLevelId == id);
         }
+
     }
 }

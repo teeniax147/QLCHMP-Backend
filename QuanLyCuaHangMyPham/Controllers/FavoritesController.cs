@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // Lấy danh sách sản phẩm yêu thích của người dùng
+        [Authorize]
         [HttpGet("user-favorites")]
         public async Task<IActionResult> GetUserFavorites()
         {
@@ -60,6 +62,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // Thêm sản phẩm vào danh sách yêu thích
         [HttpPost("add")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> AddToFavorites([FromBody] AddFavoriteRequest request)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -88,6 +91,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // Xóa sản phẩm khỏi danh sách yêu thích
         [HttpDelete("remove")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> RemoveFromFavorites([FromBody] RemoveFavoriteRequest request)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));

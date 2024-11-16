@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +51,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // POST: api/Categories - Tạo mới một danh mục
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Category>> CreateCategory(Category category)
         {
             _context.Categories.Add(category);
@@ -59,7 +61,9 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // PUT: api/Categories/{id} - Cập nhật danh mục theo ID
+        
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCategory(int id, Category category)
         {
             if (id != category.Id)
@@ -90,6 +94,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // DELETE: api/Categories/{id} - Xóa danh mục theo ID
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _context.Categories.FindAsync(id);

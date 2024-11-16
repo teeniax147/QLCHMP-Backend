@@ -380,6 +380,16 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "GetCartItemCount",
+    "RelativePath": "api/Carts/item-count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
     "Method": "PreviewOrder",
     "RelativePath": "api/Carts/preview",
     "HttpMethod": "POST",

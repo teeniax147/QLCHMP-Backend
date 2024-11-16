@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Framework;
@@ -23,6 +24,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // GET: api/Admins
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Admin>>> GetAdmins()
         {
@@ -30,6 +32,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // GET: api/Admins/5
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Admin>> GetAdmin(int id)
         {
@@ -37,25 +40,26 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             if (admin == null)
             {
-                return NotFound();
+                return BadRequest("Admin không tồn tại hoặc không đúng với ID.");
             }
 
             return admin;
         }
 
         // PUT: api/Admins/5
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAdmin(int id, AdminUpdateRequest request)
         {
             if (id != request.AdminId)
             {
-                return BadRequest("Admin ID in URL does not match the ID in the request body.");
+                return BadRequest("ID Admin không khớp với ID trong trường yêu cầu.");
             }
 
             var admin = await _context.Admins.FindAsync(id);
             if (admin == null)
             {
-                return NotFound();
+                return BadRequest("Admin không tồn tại hoặc không đúng với ID.");
             }
 
             admin.UserId = request.UserId;
@@ -71,7 +75,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             {
                 if (!AdminExists(id))
                 {
-                    return NotFound();
+                    return BadRequest("Admin đã tồn tại.");
                 }
                 else
                 {
@@ -83,9 +87,18 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // POST: api/Admins
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<Admin>> PostAdmin(AdminCreateRequest request)
         {
+            // Kiểm tra xem UserId đã tồn tại trong bảng Admins chưa
+            var existingAdmin = await _context.Admins.FirstOrDefaultAsync(a => a.UserId == request.UserId);
+            if (existingAdmin != null)
+            {
+                return Conflict(new { message = "Admin này đã tồn tại." });
+            }
+
+            // Nếu chưa tồn tại, tiến hành thêm mới
             var admin = new Admin
             {
                 UserId = request.UserId,
@@ -100,18 +113,19 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // DELETE: api/Admins/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAdmin(int id)
         {
             var admin = await _context.Admins.FindAsync(id);
             if (admin == null)
             {
-                return NotFound();
+                return NotFound(new { message = $"Không tìm thấy admin với id = {id}." });
             }
 
             _context.Admins.Remove(admin);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "Đã xóa Admin!.", deletedAdmin = admin });
         }
         public class AdminCreateRequest
         {

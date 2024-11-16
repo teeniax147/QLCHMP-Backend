@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         // GET: api/Customers
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
@@ -34,6 +36,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // GET: api/Customers/5
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
             var customer = await _context.Customers
@@ -51,6 +54,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // PUT: api/Customers/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PutCustomer(int id, CustomerUpdateRequest request)
         {
             var customer = await _context.Customers.FindAsync(id);
@@ -113,6 +117,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // DELETE: api/Customers/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
