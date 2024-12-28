@@ -1,0 +1,52 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\9aad1452-9402-4cb2-8e2c-9f1b3a293092_Acer_Wallpaper_03_5000x2814.jpg))">
+      <SourceType>Package</SourceType>
+      <SourceId>QuanLyCuaHangMyPham</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/QuanLyCuaHangMyPham</BasePath>
+      <RelativePath>uploads/9aad1452-9402-4cb2-8e2c-9f1b3a293092_Acer_Wallpaper_03_5000x2814.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\9aad1452-9402-4cb2-8e2c-9f1b3a293092_Acer_Wallpaper_03_5000x2814.jpg))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\brands\c0982374-1ceb-4d48-8577-b08c41a48949_Acer_Wallpaper_01_5000x2814.jpg))">
+      <SourceType>Package</SourceType>
+      <SourceId>QuanLyCuaHangMyPham</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/QuanLyCuaHangMyPham</BasePath>
+      <RelativePath>uploads/brands/c0982374-1ceb-4d48-8577-b08c41a48949_Acer_Wallpaper_01_5000x2814.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\brands\c0982374-1ceb-4d48-8577-b08c41a48949_Acer_Wallpaper_01_5000x2814.jpg))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\products\396999e1-0e9f-4281-a9b7-97172992d326_Acer_Wallpaper_03_5000x2814.jpg))">
+      <SourceType>Package</SourceType>
+      <SourceId>QuanLyCuaHangMyPham</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/QuanLyCuaHangMyPham</BasePath>
+      <RelativePath>uploads/products/396999e1-0e9f-4281-a9b7-97172992d326_Acer_Wallpaper_03_5000x2814.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\products\396999e1-0e9f-4281-a9b7-97172992d326_Acer_Wallpaper_03_5000x2814.jpg))</OriginalItemSpec>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -21,11 +22,20 @@ namespace QuanLyCuaHangMyPham.Controllers
             _context = context;
         }
 
-        // GET: api/thuong-hieu - Lấy tất cả thương hiệu
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Brand>>> GetAllBrands()
         {
-            return await _context.Brands.Include(b => b.Products).ToListAsync();
+            var brands = await _context.Brands.Include(b => b.Products).ToListAsync();
+
+            foreach (var brand in brands)
+            {
+                if (!string.IsNullOrEmpty(brand.LogoUrl))
+                {
+                    brand.LogoUrl = $"{Request.Scheme}://{Request.Host}{brand.LogoUrl}";
+                }
+            }
+
+            return Ok(brands);
         }
 
         // GET: api/thuong-hieu/{id} - Lấy thương hiệu theo ID
@@ -45,15 +55,37 @@ namespace QuanLyCuaHangMyPham.Controllers
         // POST: api/thuong-hieu/them-moi - Tạo một thương hiệu mới (chỉ Admin)
         [Authorize(Roles = "Admin")]
         [HttpPost("them-moi")]
-        public async Task<ActionResult> CreateBrand(BrandCreateDTO brandDto)
+        public async Task<IActionResult> CreateBrand([FromForm] BrandCreateDTO brandDto)
         {
             try
             {
+                string logoPath = null;
+
+                // Xử lý upload logo
+                if (brandDto.LogoFile != null && brandDto.LogoFile.Length > 0)
+                {
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "brands");
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(brandDto.LogoFile.FileName);
+                    var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await brandDto.LogoFile.CopyToAsync(stream);
+                    }
+
+                    logoPath = $"/uploads/brands/{uniqueFileName}";
+                }
+
                 var brand = new Brand
                 {
                     Name = brandDto.Name,
                     Description = brandDto.Description,
-                    LogoUrl = brandDto.LogoUrl,
+                    LogoUrl = logoPath,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -75,54 +107,102 @@ namespace QuanLyCuaHangMyPham.Controllers
         // PUT: api/thuong-hieu/cap-nhat/{id} - Cập nhật thương hiệu (chỉ Admin)
         [Authorize(Roles = "Admin")]
         [HttpPut("cap-nhat/{id}")]
-        public async Task<IActionResult> UpdateBrand(int id, BrandUpdateDTO brandDto)
+        public async Task<IActionResult> UpdateBrand(int id, [FromForm] BrandUpdateDTO brandDto)
         {
             var brand = await _context.Brands.FindAsync(id);
             if (brand == null)
             {
-                return NotFound("Thương hiệu không tồn tại.");
+                return NotFound(new { message = "Thương hiệu không tồn tại." });
             }
 
+            string logoPath = brand.LogoUrl; // Giữ logo cũ nếu không có logo mới
+
+            // Xử lý logo mới nếu có
+            if (brandDto.LogoFile != null && brandDto.LogoFile.Length > 0)
+            {
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "brands");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(brandDto.LogoFile.FileName);
+                var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await brandDto.LogoFile.CopyToAsync(stream);
+                }
+
+                // Xóa logo cũ nếu có
+                if (!string.IsNullOrEmpty(brand.LogoUrl))
+                {
+                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", brand.LogoUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                logoPath = $"/uploads/brands/{uniqueFileName}";
+            }
+
+            // Cập nhật thông tin thương hiệu
             brand.Name = brandDto.Name;
             brand.Description = brandDto.Description;
-            brand.LogoUrl = brandDto.LogoUrl;
+            brand.LogoUrl = logoPath;
 
-            _context.Entry(brand).State = EntityState.Modified;
 
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "Cập nhật thương hiệu thành công.", data = brand });
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!BrandExists(id))
                 {
-                    return NotFound("Thương hiệu không tồn tại.");
+                    return NotFound(new { message = "Thương hiệu không tồn tại." });
                 }
                 else
                 {
                     throw;
                 }
             }
-
-            return Ok("Cập nhật thương hiệu thành công.");
         }
 
-        // DELETE: api/thuong-hieu/{id} - Xóa thương hiệu (chỉ Admin)
+        // DELETE: api/thuong-hieu/xoa/{id} - Xóa thương hiệu (chỉ Admin)
         [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
+        [HttpDelete("xoa/{id}")]
         public async Task<IActionResult> DeleteBrand(int id)
         {
             var brand = await _context.Brands.FindAsync(id);
             if (brand == null)
             {
-                return NotFound("Không tìm thấy thương hiệu để xóa.");
+                return NotFound(new { message = "Thương hiệu không tồn tại." });
+            }
+
+            // Xóa logo nếu có
+            if (!string.IsNullOrEmpty(brand.LogoUrl))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", brand.LogoUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
             }
 
             _context.Brands.Remove(brand);
-            await _context.SaveChangesAsync();
 
-            return Ok("Xóa thương hiệu thành công.");
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Xóa thương hiệu thành công." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Đã xảy ra lỗi khi xóa thương hiệu.", error = ex.Message });
+            }
         }
 
         // GET: api/thuong-hieu/danh-sach-phan-trang - Lấy danh sách thương hiệu với phân trang và tìm kiếm
@@ -277,15 +357,21 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
         public class BrandCreateDTO
         {
-            public string Name { get; set; } = null!;
+            [Required(ErrorMessage = "Tên thương hiệu là bắt buộc.")]
+            public string Name { get; set; }
+
             public string? Description { get; set; }
-            public string? LogoUrl { get; set; }
+
+            public IFormFile? LogoFile { get; set; } // File logo tải lên
         }
         public class BrandUpdateDTO
         {
-            public string Name { get; set; } = null!;
+            [Required(ErrorMessage = "Tên thương hiệu là bắt buộc.")]
+            public string Name { get; set; }
+
             public string? Description { get; set; }
-            public string? LogoUrl { get; set; }
+
+            public IFormFile? LogoFile { get; set; } // File logo tải lên (nếu cần cập nhật)
         }
         public class BrandPagedListDTO
         {

@@ -34,27 +34,79 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             return await _context.Orders.ToListAsync();
         }
-
-        // Lấy danh sách đơn hàng của người dùng
-        [HttpGet("user-orders")]
-        public async Task<IActionResult> GetUserOrders()
+        //Lấy danh sách đơn hàng của tất cả khách hàng
+        [Authorize(Roles = "Admin")]
+        [HttpGet("all-orders")]
+        public async Task<IActionResult> GetAllOrders([FromQuery] int pageNumber = 1, int pageSize = 10)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Số trang và số sản phẩm mỗi trang phải lớn hơn 0.");
+            }
 
+            var ordersQuery = _context.Orders
+                .Include(o => o.Customer)
+                .ThenInclude(c => c.User)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.Coupon)
+                .Include(o => o.ShippingCompany)
+                .Include(o => o.PaymentMethod)
+                .OrderByDescending(o => o.OrderDate);
+
+            var totalOrders = await ordersQuery.CountAsync();
+            var orders = await ordersQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                TotalOrders = totalOrders,
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                Orders = orders.Select(o => new
+                {
+                    o.Id,
+                    o.OrderDate,
+                    o.Status,
+                    o.TotalAmount,
+                    o.DiscountApplied,
+                    o.ShippingCost,
+                    o.ShippingAddress,
+                    o.EstimatedDeliveryDate,
+                    CustomerName = $"{o.Customer.User.FirstName} {o.Customer.User.LastName}",
+                    OrderDetails = o.OrderDetails.Select(od => new
+                    {
+                        od.ProductId,
+                        od.Product.Name,
+                        od.Quantity,
+                        od.UnitPrice,
+                        od.TotalPrice
+                    })
+                })
+            });
+        }
+        //Lấy danh sách đơn hàng của một khách hàng cụ thể
+        [Authorize]
+        [HttpGet("customer/{customerId}/orders")]
+        public async Task<IActionResult> GetOrdersByCustomer(int customerId)
+        {
             var orders = await _context.Orders
-              .Include(o => o.Customer)
-              .ThenInclude(c => c.User)
-              .Include(o => o.OrderDetails)
-              .ThenInclude(od => od.Product)
-              .Include(o => o.Coupon)
-              .Include(o => o.ShippingCompany)
-              .Include(o => o.PaymentMethod)
-              .OrderByDescending(o => o.OrderDate)
-              .ToListAsync();
+                .Include(o => o.Customer)
+                .ThenInclude(c => c.User)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.Coupon)
+                .Include(o => o.ShippingCompany)
+                .Include(o => o.PaymentMethod)
+                .Where(o => o.CustomerId == customerId)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
 
             if (!orders.Any())
             {
-                return NotFound("Không có đơn hàng nào.");
+                return NotFound("Không có đơn hàng nào cho khách hàng này.");
             }
 
             return Ok(orders.Select(o => new
@@ -67,6 +119,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 o.ShippingCost,
                 o.ShippingAddress,
                 o.EstimatedDeliveryDate,
+                CustomerName = $"{o.Customer.User.FirstName} {o.Customer.User.LastName}",
                 OrderDetails = o.OrderDetails.Select(od => new
                 {
                     od.ProductId,
@@ -78,48 +131,36 @@ namespace QuanLyCuaHangMyPham.Controllers
             }));
         }
 
-        // Lấy chi tiết đơn hàng
         [Authorize]
-        [HttpGet("{orderId}")]
-        public async Task<IActionResult> GetOrderDetails(int orderId)
+        [HttpGet("orders/{orderId}/details")]
+        public async Task<IActionResult> GetOrderDetailsWithImagesByOrderId(int orderId)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            var order = await _context.Orders
-                .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
-                .Include(o => o.Coupon)
-                .Include(o => o.ShippingCompany)
-                .Include(o => o.PaymentMethod)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.CustomerId == userId);
-
-            if (order == null)
-            {
-                return NotFound("Không tìm thấy đơn hàng.");
-            }
-
-            return Ok(new
-            {
-                order.Id,
-                order.OrderDate,
-                order.Status,
-                order.TotalAmount,
-                order.DiscountApplied,
-                order.ShippingCost,
-                order.ShippingAddress,
-                order.EstimatedDeliveryDate,
-                order.PaymentStatus,
-                order.OrderNotes,
-                OrderDetails = order.OrderDetails.Select(od => new
+            var orderDetails = await _context.OrderDetails
+                .Include(od => od.Product) // Bao gồm thông tin sản phẩm
+                .Where(od => od.OrderId == orderId) // Lọc theo OrderId
+                .Select(od => new
                 {
+                    od.Id,
+                    od.OrderId,
                     od.ProductId,
-                    od.Product.Name,
+                    ProductName = od.Product.Name,
+                    ProductDescription = od.Product.Description,
+                    ProductImage = od.Product.ImageUrl, // Link hình ảnh sản phẩm
                     od.Quantity,
                     od.UnitPrice,
                     od.TotalPrice
                 })
-            });
+                .ToListAsync();
+
+            if (!orderDetails.Any())
+            {
+                return NotFound(new { Message = "Không tìm thấy chi tiết sản phẩm cho đơn hàng này." });
+            }
+
+            return Ok(orderDetails);
         }
+
+
         [HttpPost("create")]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> CreateOrder()
@@ -222,23 +263,26 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPut("{orderId}/cancel")]
         public async Task<IActionResult> CancelOrder(int orderId)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.CustomerId == userId);
+
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
             {
                 return NotFound("Không tìm thấy đơn hàng.");
             }
 
-            if (order.Status != "Đang Giao Hàng" && order.Status != "Chờ Lấy Hàng"
-                && order.Status != "Đã Giao")
+            if (order.Status == "Chờ Xác Nhận")
+            {
+                order.Status = "Đã Hủy";
+                order.PaymentStatus = "Đã Hủy. Sẽ hoàn tiền trong 24h đối với giao dịch chuyển khoản";
+                return Ok("Đã Hủy");
+            }
+            else
             {
                 return BadRequest("Chỉ có thể hủy các đơn hàng đang chờ xác nhận.");
             }
 
-            order.Status = "Đã Hủy";
-            order.PaymentStatus = "Đã Hủy. Sẽ hoàn tiền trong 24h đối với giao dịch chuyển khoản";
             await _context.SaveChangesAsync();
 
             return Ok("Đơn hàng đã được hủy thành công.");
@@ -291,55 +335,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok("Đơn hàng đã được hủy bởi bên bán.");
         }
-        // Lấy danh sách tất cả đơn hàng (dành cho Admin)
-        [Authorize(Roles = "Admin")]
-        [HttpGet("all-orders")]
-        public async Task<IActionResult> GetAllOrders([FromQuery] int pageNumber = 1, int pageSize = 10)
-        {
-            if (pageNumber <= 0 || pageSize <= 0)
-            {
-                return BadRequest("Số trang và số sản phẩm mỗi trang phải lớn hơn 0.");
-            }
 
-            var ordersQuery = _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
-                .OrderByDescending(o => o.OrderDate);
-
-            var totalOrders = await ordersQuery.CountAsync();
-            var orders = await ordersQuery
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new
-            {
-                TotalOrders = totalOrders,
-                CurrentPage = pageNumber,
-                PageSize = pageSize,
-                Orders = orders.Select(o => new
-                {
-                    o.Id,
-                    o.OrderDate,
-                    o.Status,
-                    o.TotalAmount,
-                    o.DiscountApplied,
-                    o.ShippingCost,
-                    o.ShippingAddress,
-                    o.EstimatedDeliveryDate,
-                    CustomerName = $"{o.Customer.User.FirstName} {o.Customer.User.LastName}",
-                    OrderDetails = o.OrderDetails.Select(od => new
-                    {
-                        od.ProductId,
-                        od.Product.Name,
-                        od.Quantity,
-                        od.UnitPrice,
-                        od.TotalPrice
-                    })
-                })
-            });
-        }
 
         private bool OrderExists(int id)
         {

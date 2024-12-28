@@ -49,7 +49,6 @@ namespace QuanLyCuaHangMyPham.Controllers
             return Ok(feedbacks);
         }
 
-        // Thêm phản hồi cho sản phẩm
         [Authorize(Roles = "Customer")]
         [HttpPost("add")]
         public async Task<IActionResult> AddProductFeedback([FromBody] AddProductFeedbackRequest request)
@@ -62,6 +61,13 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return Unauthorized("Không tìm thấy khách hàng.");
             }
 
+            // Kiểm tra nếu sản phẩm có tồn tại
+            var productExists = await _context.Products.AnyAsync(p => p.Id == request.ProductId);
+            if (!productExists)
+            {
+                return BadRequest("Sản phẩm không tồn tại.");
+            }
+
             // Kiểm tra nếu khách hàng đã mua sản phẩm này
             var hasPurchased = await _context.OrderDetails
                 .Include(od => od.Order)
@@ -72,15 +78,16 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest("Bạn chỉ có thể đánh giá sản phẩm mà bạn đã mua.");
             }
 
-            // Kiểm tra nếu khách hàng đã đánh giá sản phẩm này cho đơn hàng
+            // Kiểm tra nếu khách hàng đã đánh giá sản phẩm này
             var hasAlreadyReviewed = await _context.ProductFeedbacks
                 .AnyAsync(f => f.CustomerId == customer.CustomerId && f.ProductId == request.ProductId);
 
             if (hasAlreadyReviewed)
             {
-                return BadRequest("Bạn đã đánh giá sản phẩm này cho đơn hàng này.");
+                return BadRequest("Bạn đã đánh giá sản phẩm này.");
             }
 
+            // Tạo phản hồi mới
             var feedback = new ProductFeedback
             {
                 CustomerId = customer.CustomerId,
@@ -95,6 +102,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok("Phản hồi đã được thêm thành công.");
         }
+
 
         // Xóa phản hồi sản phẩm (chỉ dành cho chủ sở hữu phản hồi)
         [Authorize(Roles = "Customer")]

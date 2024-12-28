@@ -324,3 +324,10 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\System.
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\QuanLyCuaHangMyPham.staticwebassets.runtime.json
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Configuration.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Binder.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Http.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll

@@ -34,6 +34,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             var favorites = await _context.Favorites
                 .Where(f => f.UserId == userId)
                 .Include(f => f.Product)
+                 .ThenInclude(p => p.Brand)
                 .Select(f => new
                 {
                     f.Product.Id,
@@ -46,7 +47,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                     f.Product.ReviewCount,
                     f.Product.AverageRating,
                     f.Product.CreatedAt,
-                    f.Product.BrandId,
+                    BrandName = f.Product.Brand.Name,
                     ShockPrice = f.Product.ShockPrice, // Giá khuyến mãi (nếu có)
                     Stock = f.Product.GetCurrentStock(), // Số lượng tồn kho
                 })

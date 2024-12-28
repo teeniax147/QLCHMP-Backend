@@ -92,32 +92,50 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPost("resend-otp")]
         public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequest request)
         {
-            // Kiểm tra xem email có hợp lệ không
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.OtpPurpose))
             {
                 return BadRequest("Email và mục đích là bắt buộc.");
             }
 
-            // Kiểm tra xem thông tin người dùng có tồn tại trong cache không
-            if (!_cache.TryGetValue(request.Email + "_data", out RegisterRequest cachedRequest))
+            _logger.LogInformation($"Resend OTP requested for {request.Email}, Purpose: {request.OtpPurpose}");
+
+            if (request.OtpPurpose == "register")
             {
-                return BadRequest("Thông tin người dùng không tồn tại hoặc đã hết hạn.");
+                if (!_cache.TryGetValue(request.Email + "_data", out RegisterRequest cachedRequest))
+                {
+                    _logger.LogWarning($"Register cache not found for {request.Email}.");
+                    return BadRequest("Thông tin đăng ký không tồn tại hoặc đã hết hạn.");
+                }
+            }
+            else if (request.OtpPurpose == "forgot-password")
+            {
+                var user = await _userManager.FindByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User not found for email {request.Email}.");
+                    return BadRequest("Không tìm thấy người dùng với email này.");
+                }
+            }
+            else
+            {
+                _logger.LogError($"Invalid OTP purpose: {request.OtpPurpose}");
+                return BadRequest("Mục đích OTP không hợp lệ.");
             }
 
-            // Tạo mã OTP mới
             var otp = _emailService.GenerateOTP();
-            _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5)); // Lưu mã OTP mới vào cache
+            _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5));
 
-            // Gửi email chứa mã OTP mới
             var subject = request.OtpPurpose == "register"
                     ? "Xác thực đăng ký tài khoản của bạn"
                     : "Mã OTP để khôi phục mật khẩu";
-            var message = $"Vui lòng sử dụng mã OTP sau để {(request.OtpPurpose == "register" ? "đăng ký tài khoản của bạn" : "khôi phục mật khẩu của bạn")}: {otp}.\nLưu ý: Mã OTP chỉ có hiệu lực trong vòng 5 phút.";
+            var message = $"Vui lòng sử dụng mã OTP sau để {(request.OtpPurpose == "register" ? "đăng ký tài khoản của bạn" : "khôi phục mật khẩu của bạn")}: {otp}.\nMã OTP có hiệu lực trong 5 phút.";
 
             await _emailService.SendEmailAsync(request.Email, subject, message);
 
+            _logger.LogInformation($"OTP resent successfully to {request.Email}.");
             return Ok("Mã OTP đã được gửi lại. Vui lòng kiểm tra email của bạn.");
         }
+
 
         // Xác thực OTP dùng chung cho cả đăng ký và quên mật khẩu
         [HttpPost("verify-otp")]

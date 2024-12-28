@@ -1,0 +1,33 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\uploads\\9aad1452-9402-4cb2-8e2c-9f1b3a293092_Acer_Wallpaper_03_5000x2814.jpg",
+      "PackagePath": "staticwebassets\\uploads\\9aad1452-9402-4cb2-8e2c-9f1b3a293092_Acer_Wallpaper_03_5000x2814.jpg"
+    },
+    {
+      "Id": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\uploads\\brands\\c0982374-1ceb-4d48-8577-b08c41a48949_Acer_Wallpaper_01_5000x2814.jpg",
+      "PackagePath": "staticwebassets\\uploads\\brands\\c0982374-1ceb-4d48-8577-b08c41a48949_Acer_Wallpaper_01_5000x2814.jpg"
+    },
+    {
+      "Id": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\uploads\\products\\396999e1-0e9f-4281-a9b7-97172992d326_Acer_Wallpaper_03_5000x2814.jpg",
+      "PackagePath": "staticwebassets\\uploads\\products\\396999e1-0e9f-4281-a9b7-97172992d326_Acer_Wallpaper_03_5000x2814.jpg"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.QuanLyCuaHangMyPham.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.QuanLyCuaHangMyPham.props",
+      "PackagePath": "build\\QuanLyCuaHangMyPham.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.QuanLyCuaHangMyPham.props",
+      "PackagePath": "buildMultiTargeting\\QuanLyCuaHangMyPham.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.QuanLyCuaHangMyPham.props",
+      "PackagePath": "buildTransitive\\QuanLyCuaHangMyPham.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

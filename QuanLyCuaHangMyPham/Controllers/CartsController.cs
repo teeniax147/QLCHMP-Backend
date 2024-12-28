@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using QuanLyCuaHangMyPham.Data;
 using QuanLyCuaHangMyPham.Models;
 using Microsoft.Extensions.Caching.Memory;
+using QuanLyCuaHangMyPham.Services;
 
 
 namespace QuanLyCuaHangMyPham.Controllers
@@ -22,10 +23,14 @@ namespace QuanLyCuaHangMyPham.Controllers
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
         private readonly IMemoryCache _cache;  // Khai báo _cache
-        public CartsController(QuanLyCuaHangMyPhamContext context, IMemoryCache cache)
+        private readonly MoMoPaymentService _moMoPaymentService;
+        private readonly IConfiguration _configuration; // Khai báo biến cấu hình
+        public CartsController(QuanLyCuaHangMyPhamContext context, IMemoryCache cache, IConfiguration configuration, MoMoPaymentService moMoPaymentService)
         {
             _context = context;
             _cache = cache;
+            _configuration = configuration;
+            _moMoPaymentService = moMoPaymentService;
         }
         [HttpGet("item-count")]
         public async Task<IActionResult> GetCartItemCount()
@@ -190,7 +195,25 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             // Lưu dữ liệu vào IMemoryCache
             _cache.Set($"PreviewOrder:{userId}", previewData, TimeSpan.FromMinutes(30));
+            if (request.PaymentMethodId == 2) // Nếu chọn thanh toán MoMo
+            {
+                var returnUrl = "https://yourfrontend.com/return-momo";
+                var notifyUrl = "https://yourbackend.com/api/carts/momo-notify";
 
+                var responseData = await _moMoPaymentService.CreatePaymentAsync(Guid.NewGuid().ToString(), totalAmount, returnUrl, notifyUrl);
+
+                if (responseData["resultCode"] == 0)
+                {
+                    return Ok(new
+                    {
+                        MoMoPaymentUrl = responseData["payUrl"],
+                        TotalAmount = totalAmount,
+                        PreviewData = previewData
+                    });
+                }
+
+                return BadRequest("Không thể tạo giao dịch thanh toán MoMo.");
+            }
             return Ok(previewData);
         }
         // Thêm sản phẩm vào giỏ hàng

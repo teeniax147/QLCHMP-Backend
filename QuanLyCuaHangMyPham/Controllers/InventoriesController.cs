@@ -23,15 +23,26 @@ namespace QuanLyCuaHangMyPham.Controllers
             _context = context;
         }
 
-        // GET: api/Inventory
         [HttpGet]
-        
-        public async Task<ActionResult<IEnumerable<Inventory>>> GetInventories()
+        public async Task<ActionResult> GetInventories(int page = 1, int pageSize = 10)
         {
-            return await _context.Inventories.Include(i => i.Product).ToListAsync();
+            var inventories = await _context.Inventories
+                .Include(i => i.Product)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var total = await _context.Inventories.CountAsync();
+
+            return Ok(new
+            {
+                Total = total,
+                Page = page,
+                PageSize = pageSize,
+                Data = inventories
+            });
         }
 
-        // GET: api/Inventory/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Inventory>> GetInventory(int id)
@@ -65,7 +76,6 @@ namespace QuanLyCuaHangMyPham.Controllers
             return CreatedAtAction("GetInventory", new { id = inventory.InventoryId }, inventory);
         }
 
-        // PUT: api/Inventory/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateInventory(int id, [FromBody] InventoryUpdateRequest request)
@@ -108,7 +118,6 @@ namespace QuanLyCuaHangMyPham.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Inventory/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteInventory(int id)
@@ -124,6 +133,35 @@ namespace QuanLyCuaHangMyPham.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        [HttpGet("search")]
+        public async Task<ActionResult> SearchInventories(string? warehouseLocation, int? productId, int? minStock, int? maxStock)
+        {
+            var query = _context.Inventories.AsQueryable();
+
+            if (!string.IsNullOrEmpty(warehouseLocation))
+            {
+                query = query.Where(i => i.WarehouseLocation.Contains(warehouseLocation));
+            }
+
+            if (productId.HasValue)
+            {
+                query = query.Where(i => i.ProductId == productId);
+            }
+
+            if (minStock.HasValue)
+            {
+                query = query.Where(i => i.QuantityInStock >= minStock.Value);
+            }
+
+            if (maxStock.HasValue)
+            {
+                query = query.Where(i => i.QuantityInStock <= maxStock.Value);
+            }
+
+            var inventories = await query.Include(i => i.Product).ToListAsync();
+
+            return Ok(new { message = "Tìm kiếm thành công.", data = inventories });
         }
 
         private bool InventoryExists(int id)

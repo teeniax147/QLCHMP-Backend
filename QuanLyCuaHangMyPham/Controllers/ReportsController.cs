@@ -21,39 +21,39 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-    [HttpGet("revenue/from-to")]
-    public async Task<IActionResult> GetRevenueFromToDate(DateTime startDate, DateTime endDate, string format = "json")
-    {
-        var revenueData = await _context.Orders
-            .Where(o => o.OrderDate.HasValue && o.OrderDate.Value >= startDate && o.OrderDate.Value <= endDate)
-            .GroupBy(o => o.OrderDate.Value.Date)
-            .Select(g => new
+        [HttpGet("revenue/from-to")]
+        public async Task<IActionResult> GetRevenueFromToDate(DateTime startDate, DateTime endDate, string format = "json")
+        {
+            var revenueData = await _context.Orders
+                .Where(o => o.OrderDate.HasValue && o.OrderDate.Value >= startDate && o.OrderDate.Value <= endDate)
+                .GroupBy(o => o.OrderDate.Value.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    TotalRevenue = g.Sum(o => o.OrderDetails.Sum(od => (od.Quantity ?? 0) * (od.UnitPrice ?? 0))),
+                    TotalOrders = g.Count()
+                })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            if (format.ToLower() == "pdf")
             {
-                Date = g.Key,
-                TotalRevenue = g.Sum(o => o.OrderDetails.Sum(od => (od.Quantity ?? 0) * (od.UnitPrice ?? 0))),
-                TotalOrders = g.Count()
-            })
-            .OrderBy(x => x.Date)
-            .ToListAsync();
+                var pdfBytes = _exportService.ExportToPdf("Báo cáo doanh thu", revenueData);
+                return File(pdfBytes, "application/pdf", "BaoCaoDoanhThu.pdf");
+            }
+            else if (format.ToLower() == "excel")
+            {
+                var excelBytes = _exportService.ExportToExcel("Báo cáo doanh thu", revenueData);
+                return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BaoCaoDoanhThu.xlsx");
+            }
 
-        if (format.ToLower() == "pdf")
-        {
-            var pdfBytes = _exportService.ExportToPdf("Báo cáo doanh thu", revenueData);
-            return File(pdfBytes, "application/pdf", "BaoCaoDoanhThu.pdf");
+            return Ok(new
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                RevenueData = revenueData
+            });
         }
-        else if (format.ToLower() == "excel")
-        {
-            var excelBytes = _exportService.ExportToExcel("Báo cáo doanh thu", revenueData);
-            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BaoCaoDoanhThu.xlsx");
-        }
-
-        return Ok(new
-        {
-            StartDate = startDate,
-            EndDate = endDate,
-            RevenueData = revenueData
-        });
-    }
 
         // 2. Thống kê doanh thu theo thương hiệu trong khoảng thời gian
         [HttpGet("revenue/brands/from-to")]

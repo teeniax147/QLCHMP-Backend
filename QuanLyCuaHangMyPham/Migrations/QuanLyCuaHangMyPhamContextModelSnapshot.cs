@@ -1267,7 +1267,7 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK__Favorites__user___06CD04F7");
+                        .HasConstraintName("FK_Favorites_User");
 
                     b.Navigation("Product");
 

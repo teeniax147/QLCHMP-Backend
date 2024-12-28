@@ -13,6 +13,9 @@ using QuanLyCuaHangMyPham.Services;
 using QuanLyCuaHangMyPham.IdentityModels;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -24,7 +27,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(MyAllowSpecificOrigins,
         policyBuilder =>
         {
-            policyBuilder.WithOrigins("http://localhost:5173")  // Địa chỉ ứng dụng React (Vite)
+            policyBuilder.AllowAnyOrigin()  // Địa chỉ ứng dụng React (Vite)
                           .AllowAnyMethod()
                           .AllowAnyHeader();
         });
@@ -64,7 +67,10 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = key
     };
 });
-
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // Giới hạn 50MB
+});
 // Đăng ký các dịch vụ cho API controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -107,10 +113,10 @@ builder.Services.AddSwaggerGen(c =>
             new string[] { }
         }
     });
-    
+
 
 });
-
+builder.Services.AddHttpClient<MoMoPaymentService>();
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddScoped<IEmailService, EmailService>();
 
@@ -129,7 +135,19 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging()) // Cấu hì
         c.DefaultModelsExpandDepth(-1); // Ẩn các model chi tiết nếu muốn
     });
 }
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = new FileExtensionContentTypeProvider
+    {
+        Mappings =
+        {
+            [".png"] = "image/png",
+            [".jpg"] = "image/jpeg",
+            [".jpeg"] = "image/jpeg"
+        }
+    }
+});
+app.UseRouting(); // Đảm bảo routing được thiết lập sau UseStaticFiles
 // Sử dụng Https
 app.UseHttpsRedirection();
 

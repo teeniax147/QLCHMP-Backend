@@ -17,6 +17,9 @@ public class ExportService
 {
     public byte[] ExportToPdf<T>(string title, List<T> data)
     {
+        if (data == null || !data.Any())
+            throw new ArgumentException("No data provided for PDF export.");
+
         using var ms = new MemoryStream();
         using var writer = new PdfWriter(ms);
         using var pdfDoc = new PdfDocument(writer);
@@ -26,20 +29,27 @@ public class ExportService
         document.Add(new Paragraph(title)
             .SetFontSize(20)
             .SetBold()
-            .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+            .SetTextAlignment(TextAlignment.CENTER));
 
         // Tạo bảng dữ liệu
-        var table = new Table(data.First().GetType().GetProperties().Length);
-        foreach (var prop in data.First().GetType().GetProperties())
+        var properties = data.First().GetType().GetProperties();
+        var table = new Table(properties.Length);
+
+        // Thêm tiêu đề cột
+        foreach (var prop in properties)
         {
-            table.AddHeaderCell(new Paragraph(prop.Name).SetBold());
+            table.AddHeaderCell(new Paragraph(prop.Name)
+                .SetBold()
+                .SetTextAlignment(TextAlignment.CENTER));
         }
 
+        // Thêm dữ liệu vào bảng
         foreach (var item in data)
         {
-            foreach (var prop in item.GetType().GetProperties())
+            foreach (var prop in properties)
             {
-                table.AddCell(new Paragraph(prop.GetValue(item)?.ToString() ?? ""));
+                var value = prop.GetValue(item)?.ToString() ?? "N/A";
+                table.AddCell(new Paragraph(value));
             }
         }
 
@@ -49,28 +59,45 @@ public class ExportService
         return ms.ToArray();
     }
 
+
     public byte[] ExportToExcel<T>(string title, List<T> data)
     {
+        if (data == null || !data.Any())
+            throw new ArgumentException("No data provided for Excel export.");
+
         using var package = new ExcelPackage();
         var worksheet = package.Workbook.Worksheets.Add(title);
+
+        // Tiêu đề bảng
+        worksheet.Cells["A1"].Value = title;
+        worksheet.Cells["A1"].Style.Font.Size = 16;
+        worksheet.Cells["A1"].Style.Font.Bold = true;
+        worksheet.Cells["A1:H1"].Merge = true;
+        worksheet.Cells["A1:H1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
         // Tiêu đề cột
         var properties = data.First().GetType().GetProperties();
         for (int i = 0; i < properties.Length; i++)
         {
-            worksheet.Cells[1, i + 1].Value = properties[i].Name;
+            worksheet.Cells[2, i + 1].Value = properties[i].Name;
+            worksheet.Cells[2, i + 1].Style.Font.Bold = true;
+            worksheet.Cells[2, i + 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
         }
 
-        // Dữ liệu
+        // Thêm dữ liệu
         for (int i = 0; i < data.Count; i++)
         {
             for (int j = 0; j < properties.Length; j++)
             {
-                worksheet.Cells[i + 2, j + 1].Value = properties[j].GetValue(data[i]);
+                worksheet.Cells[i + 3, j + 1].Value = properties[j].GetValue(data[i])?.ToString() ?? "N/A";
             }
         }
 
+        // AutoFit cột
+        worksheet.Cells.AutoFitColumns();
+
         return package.GetAsByteArray();
     }
+
 }
 

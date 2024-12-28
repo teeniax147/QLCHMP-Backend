@@ -57,35 +57,59 @@ namespace QuanLyCuaHangMyPham.Controllers
         // POST: api/beauty-blog/them-moi - Tạo một bài viết mới
         [Authorize(Roles = "Admin")]
         [HttpPost("them-moi")]
-        public async Task<ActionResult<BeautyBlog>> CreateBlog(BeautyBlogCreateRequest request)
+        public async Task<ActionResult<BeautyBlog>> CreateBlog([FromForm] BeautyBlogCreateRequest request)
         {
-            var blog = new BeautyBlog
+            try
             {
-                Title = request.Title,
-                Content = request.Content,
-                Author = request.Author,
-                FeaturedImage = request.FeaturedImage,
-                CategoryId = request.CategoryId,
-                ScheduledPublishDate = request.ScheduledPublishDate,
-                CreatedAt = DateTime.UtcNow,
-                ViewCount = 0
-            };
+                string imagePath = null;
 
-            _context.BeautyBlogs.Add(blog);
-            await _context.SaveChangesAsync();
+                if (request.FeaturedImage != null && request.FeaturedImage.Length > 0)
+                {
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
 
-            return CreatedAtAction(nameof(GetBlogById), new { id = blog.Id }, new { Message = "Tạo bài viết mới thành công", Blog = blog });
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(request.FeaturedImage.FileName);
+                    var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await request.FeaturedImage.CopyToAsync(stream);
+                    }
+
+                    imagePath = $"/uploads/{uniqueFileName}";
+                }
+
+                var blog = new BeautyBlog
+                {
+                    Title = request.Title,
+                    Content = request.Content,
+                    Author = request.Author,
+                    FeaturedImage = imagePath,
+                    CategoryId = request.CategoryId,
+                    ScheduledPublishDate = request.ScheduledPublishDate,
+                    CreatedAt = DateTime.UtcNow,
+                    ViewCount = 0
+                };
+
+                _context.BeautyBlogs.Add(blog);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction(nameof(GetBlogById), new { id = blog.Id }, new { Message = "Tạo bài viết mới thành công", Blog = blog });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Đã xảy ra lỗi khi xử lý file tải lên.", Error = ex.Message });
+            }
         }
 
         // PUT: api/beauty-blog/cap-nhat/{id} - Cập nhật bài viết
         [Authorize(Roles = "Admin")]
         [HttpPut("cap-nhat/{id}")]
-        public async Task<IActionResult> UpdateBlog(int id, BeautyBlogUpdateRequest request)
-        {
-            if (id != request.Id)
-            {
-                return BadRequest("ID không khớp.");
-            }
+        public async Task<IActionResult> UpdateBlog(int id, [FromForm] BeautyBlogUpdateRequest request)
+        {        
 
             var blog = await _context.BeautyBlogs.FindAsync(id);
             if (blog == null)
@@ -93,18 +117,53 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return NotFound("Bài viết không tồn tại.");
             }
 
+            string? imagePath = blog.FeaturedImage; // Giữ ảnh cũ nếu không cập nhật ảnh mới
+
+            if (request.FeaturedImage != null && request.FeaturedImage.Length > 0)
+            {
+                // Xử lý lưu file ảnh mới
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(request.FeaturedImage.FileName);
+                var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await request.FeaturedImage.CopyToAsync(stream);
+                }
+
+                // Gán đường dẫn file mới
+                imagePath = $"/uploads/{uniqueFileName}";
+
+                // Xóa ảnh cũ nếu có (tránh để file rác)
+                if (!string.IsNullOrEmpty(blog.FeaturedImage))
+                {
+                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", blog.FeaturedImage.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+            }
+
+            // Cập nhật các thông tin khác
             blog.Title = request.Title;
             blog.Content = request.Content;
             blog.Author = request.Author;
-            blog.FeaturedImage = request.FeaturedImage;
+            blog.FeaturedImage = imagePath;
             blog.CategoryId = request.CategoryId;
             blog.UpdatedAt = DateTime.UtcNow;
 
             _context.Entry(blog).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return Ok("Cập nhật bài viết thành công.");
+            return Ok(new { Message = "Cập nhật bài viết thành công", Blog = blog });
         }
+
 
         // DELETE: api/beauty-blog/xoa/{id} - Xóa bài viết
         [Authorize(Roles = "Admin")]
@@ -199,18 +258,43 @@ namespace QuanLyCuaHangMyPham.Controllers
         // POST: api/beauty-blog/len-lich - Lên lịch đăng bài
         [Authorize(Roles = "Admin")]
         [HttpPost("len-lich")]
-        public async Task<IActionResult> ScheduleBlogPost([FromBody] BeautyBlogScheduleRequest request)
+        public async Task<IActionResult> ScheduleBlogPost([FromForm] BeautyBlogScheduleRequest request)
         {
+            // Kiểm tra danh mục tồn tại
             if (!await _context.Categories.AnyAsync(c => c.Id == request.CategoryId))
             {
                 return BadRequest("Danh mục không tồn tại.");
             }
+
+            string? imagePath = null;
+
+            // Xử lý file ảnh tải lên
+            if (request.FeaturedImage != null && request.FeaturedImage.Length > 0)
+            {
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(request.FeaturedImage.FileName);
+                var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await request.FeaturedImage.CopyToAsync(stream);
+                }
+
+                imagePath = $"/uploads/{uniqueFileName}";
+            }
+
+            // Tạo bài viết mới
             var blog = new BeautyBlog
             {
                 Title = request.Title,
                 Content = request.Content,
                 Author = request.Author,
-                FeaturedImage = request.FeaturedImage,
+                FeaturedImage = imagePath,
                 CategoryId = request.CategoryId,
                 ScheduledPublishDate = request.ScheduledPublishDate,
                 CreatedAt = null
@@ -221,6 +305,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return CreatedAtAction(nameof(GetBlogById), new { id = blog.Id }, new { Message = "Lên lịch bài viết thành công", Blog = blog });
         }
+
 
         // GET: api/beauty-blog/dang-bai-viet-len-lich - Đăng các bài viết đã được lên lịch
         [Authorize(Roles = "Admin")]
@@ -257,7 +342,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             public string? Author { get; set; }
 
-            public string? FeaturedImage { get; set; }
+            public IFormFile? FeaturedImage { get; set; } // Đây phải là IFormFile
 
             public int? CategoryId { get; set; }
 
@@ -265,9 +350,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         }
 
         public class BeautyBlogUpdateRequest
-        {
-            [Required(ErrorMessage = "ID là bắt buộc.")]
-            public int Id { get; set; }
+        {           
 
             [Required(ErrorMessage = "Tiêu đề là bắt buộc.")]
             public string Title { get; set; } = null!;
@@ -277,7 +360,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             public string? Author { get; set; }
 
-            public string? FeaturedImage { get; set; }
+            public IFormFile? FeaturedImage { get; set; } // Đây phải là IFormFile
 
             public int? CategoryId { get; set; }
         }
@@ -292,12 +375,13 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             public string? Author { get; set; }
 
-            public string? FeaturedImage { get; set; }
+            public IFormFile? FeaturedImage { get; set; } // Hỗ trợ upload file ảnh
 
             public int? CategoryId { get; set; }
 
             [Required(ErrorMessage = "Ngày lên lịch là bắt buộc.")]
             public DateTime ScheduledPublishDate { get; set; }
         }
+
     }
 }
