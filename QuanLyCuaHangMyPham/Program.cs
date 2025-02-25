@@ -16,18 +16,18 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
-var MyAllowSpecificOrigins = "AllowSpecificOrigins";
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 // Thêm CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(MyAllowSpecificOrigins,
+    options.AddPolicy("AllowFrontend",
         policyBuilder =>
         {
-            policyBuilder.AllowAnyOrigin()  // Địa chỉ ứng dụng React (Vite)
+            policyBuilder.AllowAnyOrigin()
                           .AllowAnyMethod()
                           .AllowAnyHeader();
         });
@@ -93,7 +93,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Please insert JWT with Bearer into field",
+        Description = "Nhap JWT cung voi Bearer vao truong du lieu",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
@@ -119,22 +119,32 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddHttpClient<MoMoPaymentService>();
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+builder.Services.AddEndpointsApiExplorer();  // Thêm dịch vụ để khám phá các API
 // Đăng ký MemoryCache
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging()) // Cấu hình môi trường tùy theo nhu cầu
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction()) // Cấu hình môi trường tùy theo nhu cầu
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
         c.DefaultModelsExpandDepth(-1); // Ẩn các model chi tiết nếu muốn
+        c.RoutePrefix = "swagger"; // Swagger ở root URL
     });
 }
+//// Cấu hình ứng dụng trong môi trường Production
+//if (app.Environment.IsProduction())
+//{
+//    // Thực hiện cấu hình đặc biệt cho môi trường Production
+//    // Ví dụ: Cấu hình logging, bảo mật, caching, v.v.
+//    app.UseHttpsRedirection();
+//    app.UseHsts();  // Enable HTTP Strict Transport Security
+//}
+Console.WriteLine($"Moi truong hien tai: {app.Environment.EnvironmentName}");
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = new FileExtensionContentTypeProvider
@@ -152,14 +162,24 @@ app.UseRouting(); // Đảm bảo routing được thiết lập sau UseStaticFi
 app.UseHttpsRedirection();
 
 // Sử dụng CORS
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors("AllowFrontend");
 
 // Sử dụng Authentication (JWT)
 app.UseAuthentication();
 
 // Sử dụng Authorization (Identity roles, claims)
 app.UseAuthorization();
-
+//app.MapGet("/api/available-endpoints", (IApiDescriptionGroupCollectionProvider provider) =>
+//{
+//    var apiDescriptions = provider.ApiDescriptionGroups.Items
+//        .SelectMany(group => group.Items)
+//        .Select(api => new
+//        {
+//            api.HttpMethod,
+//            api.RelativePath
+//        });
+//    return Results.Ok(apiDescriptions);
+//});
 // Cấu hình route cho controllers
 app.MapControllers();
 

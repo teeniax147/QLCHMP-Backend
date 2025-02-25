@@ -1,6 +1,6 @@
-@QuanLyCuaHangMyPham_HostAddress = http://localhost:5276
+@QuanLyCuaHangMyPham_HostAddress = https://api.glamour.io.vn
 
-GET {{QuanLyCuaHangMyPham_HostAddress}}/weatherforecast/
+GET {{QuanLyCuaHangMyPham_HostAddress}}/api/Products/danh-sach
 Accept: application/json
 
 ###

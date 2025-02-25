@@ -331,3 +331,5 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microso
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Http.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
