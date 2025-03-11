@@ -106,12 +106,12 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             // Truy vấn cơ bản
             var products = _context.Products
-                .Where(p => p.IsActive) // Chỉ lấy sản phẩm kích hoạt
-                .Include(p => p.Brand) // Thương hiệu
-                .Include(p => p.Categories) // Danh mục
-                .Include(p => p.Inventories) // Tồn kho
-                .Include(p => p.ProductFeedbacks) // Đánh giá
-                .Include(p => p.Promotions) // Khuyến mãi
+                .Where(p => p.IsActive)
+                .Include(p => p.Brand)
+                .Include(p => p.Categories)
+                .Include(p => p.Inventories)
+                .Include(p => p.ProductFeedbacks)
+                .Include(p => p.Promotions)
                 .AsQueryable();
 
             // Áp dụng bộ lọc
@@ -140,22 +140,60 @@ namespace QuanLyCuaHangMyPham.Controllers
                 products = products.Where(p => p.BrandId == request.BrandId.Value);
             }
 
+            // Truy vấn toàn bộ sản phẩm trong cơ sở dữ liệu
+            var allProducts = _context.Products.Where(p => p.IsActive).ToList();
+
+            // Tính MaxPrice và MinPrice từ tất cả sản phẩm
+            var maxPrice = allProducts.Max(p => p.Price);
+            var minPrice = allProducts.Min(p => p.Price);
+
+            // Tính giá trị trung bình của tất cả các sản phẩm
+            decimal avgPrice = allProducts.Average(p => p.Price);
+
+            // Lấy các sản phẩm có giá lớn hơn giá trị trung bình và sắp xếp theo độ chênh lệch với giá trị trung bình
+            var productsAboveAvg = allProducts
+                .Where(p => p.Price > avgPrice)
+                .OrderBy(p => Math.Abs(p.Price - avgPrice))  // Sắp xếp theo sự chênh lệch với giá trị trung bình
+                .Take(5   )  // Lấy 5 sản phẩm trên giá trị trung bình
+                .ToList();
+
+            // Lấy các sản phẩm có giá thấp hơn giá trị trung bình và sắp xếp theo độ chênh lệch với giá trị trung bình
+            var productsBelowAvg = allProducts
+                .Where(p => p.Price < avgPrice)
+                .OrderBy(p => Math.Abs(p.Price - avgPrice))  // Sắp xếp theo sự chênh lệch với giá trị trung bình
+                .Take(5)  // Lấy 5 sản phẩm dưới giá trị trung bình
+                .ToList();
+
+            // Kết hợp các sản phẩm có giá lớn hơn và nhỏ hơn giá trị trung bình
+            var closestProducts = productsAboveAvg.Concat(productsBelowAvg).ToList();
+
+            // Nếu không có sản phẩm nào thỏa mãn bộ lọc, dùng closestProducts
+            var productsToReturn = products.Any() ? products : closestProducts.AsQueryable();
+
+            // Áp dụng bộ lọc giá nếu có từ request
+            if (request.MinPrice.HasValue && request.MaxPrice.HasValue)
+            {
+                productsToReturn = productsToReturn.Where(p => p.Price >= request.MinPrice.Value && p.Price <= request.MaxPrice.Value);
+            }
+
             // Sắp xếp
             if (!string.IsNullOrEmpty(request.SortByPrice))
             {
-                products = request.SortByPrice.ToLower() switch
+                productsToReturn = request.SortByPrice.ToLower() switch
                 {
-                    "asc" => products.OrderBy(p => p.Price),
-                    "desc" => products.OrderByDescending(p => p.Price),
-                    _ => products
+                    "asc" => productsToReturn.OrderBy(p => p.Price),
+                    "desc" => productsToReturn.OrderByDescending(p => p.Price),
+                    "avgasc" => productsToReturn.OrderBy(p => avgPrice),
+                    "avgdesc" => productsToReturn.OrderByDescending(p => avgPrice),
+                    _ => productsToReturn
                 };
             }
 
             // Tổng số sản phẩm sau khi lọc
-            var totalFilteredProducts = await products.CountAsync();
+            var totalFilteredProducts = await productsToReturn.CountAsync();
 
             // Phân trang và chuyển sang DTO
-            var pagedFilteredProducts = await products
+            var pagedFilteredProducts = await productsToReturn
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Select(p => new ProductFilterDto
@@ -174,15 +212,18 @@ namespace QuanLyCuaHangMyPham.Controllers
                 })
                 .ToListAsync();
 
-            // Trả về kết quả
             return Ok(new
             {
                 DanhSachSanPham = pagedFilteredProducts,
                 TongSoSanPham = totalFilteredProducts,
                 SoTrang = request.PageNumber,
-                SoSanPhamMoiTrang = request.PageSize
+                SoSanPhamMoiTrang = request.PageSize,
+                MaxPrice = maxPrice,
+                MinPrice = minPrice,
+                GiaTrungBinh = avgPrice // Thêm giá trị trung bình vào kết quả
             });
         }
+
 
         // GET: api/san-pham/theo-danh-muc/{categoryId}
         [HttpGet("theo-danh-muc/{categoryId}")]
@@ -802,7 +843,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             [Range(1, int.MaxValue, ErrorMessage = "ID thương hiệu phải lớn hơn hoặc bằng 1.")]
             public int? BrandId { get; set; }
 
-            [RegularExpression("^(asc|desc)$", ErrorMessage = "Sắp xếp giá chỉ có thể là 'asc' hoặc 'desc'.")]
+            [RegularExpression("^(asc|desc|avgasc|avgdesc)$", ErrorMessage = "Sắp xếp giá chỉ có thể là 'asc', 'desc', 'avgasc' hoặc 'avgdesc'.")]
             public string? SortByPrice { get; set; }
         }
         public class ProductDetailDto

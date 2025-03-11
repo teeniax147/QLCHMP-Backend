@@ -672,6 +672,9 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("(getdate())");
 
+                    b.Property<decimal>("DiscountRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("LevelName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -916,6 +919,9 @@ namespace QuanLyCuaHangMyPham.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(255)")
                         .HasColumnName("image_url");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()

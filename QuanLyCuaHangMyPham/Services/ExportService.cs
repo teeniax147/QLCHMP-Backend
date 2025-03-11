@@ -28,7 +28,7 @@ public class ExportService
         // Thêm tiêu đề
         document.Add(new Paragraph(title)
             .SetFontSize(20)
-            .SetBold()
+            
             .SetTextAlignment(TextAlignment.CENTER));
 
         // Tạo bảng dữ liệu
@@ -39,7 +39,7 @@ public class ExportService
         foreach (var prop in properties)
         {
             table.AddHeaderCell(new Paragraph(prop.Name)
-                .SetBold()
+                
                 .SetTextAlignment(TextAlignment.CENTER));
         }
 

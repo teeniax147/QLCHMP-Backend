@@ -12,7 +12,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\BCryp
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\BouncyCastle.Cryptography.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\EPPlus.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\EPPlus.Interfaces.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\EPPlus.System.Drawing.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Humanizer.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\itext.barcodes.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\itext.bouncy-castle-connector.dll
@@ -99,7 +98,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Micro
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Win32.SystemEvents.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\MimeKit.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Mono.TextTemplating.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Newtonsoft.Json.dll
@@ -125,7 +123,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Syste
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Composition.TypedParts.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Configuration.ConfigurationManager.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Diagnostics.DiagnosticSource.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Drawing.Common.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.IdentityModel.Tokens.Jwt.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.IO.Pipelines.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Memory.Data.dll
@@ -133,7 +130,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Syste
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Runtime.Caching.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Security.Cryptography.Pkcs.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Security.Cryptography.ProtectedData.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Security.Permissions.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Text.Encodings.Web.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Text.Json.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\af\Humanizer.resources.dll
@@ -304,8 +300,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runti
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win\lib\net8.0\System.Runtime.Caching.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
@@ -333,3 +327,17 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\QuanL
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\ref\QuanLyCuaHangMyPham.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Extensions.ObjectPool.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Bcl.Cryptography.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Extensions.FileProviders.Physical.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Extensions.FileSystemGlobbing.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Microsoft.Extensions.WebEncoders.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Formats.Asn1.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Security.Cryptography.Xml.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Text.Encoding.CodePages.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win\lib\net8.0\System.Text.Encoding.CodePages.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\QuanLyCuaHangMyPham.RazorAssemblyInfo.cache
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\QuanLyCuaHangMyPham.RazorAssemblyInfo.cs
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\scopedcss\projectbundle\QuanLyCuaHangMyPham.bundle.scp.css
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\VNPAY.NET.dll

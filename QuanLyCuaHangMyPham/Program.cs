@@ -169,18 +169,7 @@ app.UseAuthentication();
 
 // Sử dụng Authorization (Identity roles, claims)
 app.UseAuthorization();
-//app.MapGet("/api/available-endpoints", (IApiDescriptionGroupCollectionProvider provider) =>
-//{
-//    var apiDescriptions = provider.ApiDescriptionGroups.Items
-//        .SelectMany(group => group.Items)
-//        .Select(api => new
-//        {
-//            api.HttpMethod,
-//            api.RelativePath
-//        });
-//    return Results.Ok(apiDescriptions);
-//});
-// Cấu hình route cho controllers
+
 app.MapControllers();
 
 app.Run();

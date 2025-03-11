@@ -14,6 +14,7 @@ public partial class MembershipLevel
     public string? Benefits { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+    public decimal DiscountRate { get; set; }  // Tỷ lệ giảm giá (%)
 
     public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 }

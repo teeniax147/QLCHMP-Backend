@@ -1290,17 +1290,11 @@
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
     "Method": "GetOrdersByCustomer",
-    "RelativePath": "api/Orders/customer/{customerId}/orders",
+    "RelativePath": "api/Orders/customer/orders",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "customerId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
