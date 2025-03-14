@@ -61,7 +61,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             try
             {
-                string imagePath = null;
+                string? imagePath = null;
 
                 if (request.FeaturedImage != null && request.FeaturedImage.Length > 0)
                 {

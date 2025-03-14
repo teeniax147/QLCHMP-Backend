@@ -17,7 +17,7 @@ namespace QuanLyCuaHangMyPham.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0-rc.1.24451.1")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -736,6 +736,9 @@ namespace QuanLyCuaHangMyPham.Migrations
                     b.Property<string>("PaymentStatus")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("payment_status");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ShippingAddress")
                         .HasColumnType("nvarchar(MAX)")

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "4xBmkxrwoGfnozdrU6u+0M8pnhYX48xLQnlFtF5HdZ8=",
+  "Hash": "6u8Bd0oQ0Qo7fCuR7aO8AMrhzdOuMRkGjL76b+tnbvw=",
   "Source": "QuanLyCuaHangMyPham",
   "BasePath": "_content/QuanLyCuaHangMyPham",
   "Mode": "Default",
@@ -16,6 +16,25 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\favicon.ico",
+      "SourceId": "QuanLyCuaHangMyPham",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\",
+      "BasePath": "_content/QuanLyCuaHangMyPham",
+      "RelativePath": "favicon.ico",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
     {
       "Identity": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\uploads\\019b4cbd-6044-4fed-aa46-47455e6cd124_IMG_5538.JPG",
       "SourceId": "QuanLyCuaHangMyPham",

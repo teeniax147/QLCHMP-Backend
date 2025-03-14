@@ -10,7 +10,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\BouncyCastle.Cryptography.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\EPPlus.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\EPPlus.Interfaces.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\EPPlus.System.Drawing.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Humanizer.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\itext.barcodes.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\itext.bouncy-castle-connector.dll
@@ -33,6 +32,7 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.AspNetCore.Razor.Language.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Bcl.AsyncInterfaces.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Bcl.Cryptography.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Build.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Build.Framework.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.CodeAnalysis.AnalyzerUtilities.dll
@@ -66,6 +66,9 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.DependencyModel.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Diagnostics.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Diagnostics.Abstractions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.FileProviders.Abstractions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.FileProviders.Physical.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.FileSystemGlobbing.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Hosting.Abstractions.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Http.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Identity.Core.dll
@@ -76,6 +79,7 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Options.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Options.ConfigurationExtensions.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.Primitives.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Extensions.WebEncoders.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Identity.Client.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Identity.Client.Extensions.Msal.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.IdentityModel.Abstractions.dll
@@ -95,7 +99,6 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Microsoft.Win32.SystemEvents.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\MimeKit.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Mono.TextTemplating.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Newtonsoft.Json.dll
@@ -109,6 +112,7 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\NuGet.ProjectModel.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\NuGet.Protocol.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\NuGet.Versioning.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\RestSharp.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Swashbuckle.AspNetCore.Swagger.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -121,7 +125,7 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Composition.TypedParts.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Configuration.ConfigurationManager.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Diagnostics.DiagnosticSource.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Drawing.Common.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Formats.Asn1.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.IdentityModel.Tokens.Jwt.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.IO.Pipelines.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Memory.Data.dll
@@ -129,7 +133,8 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Runtime.Caching.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Security.Cryptography.Pkcs.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Security.Cryptography.ProtectedData.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Security.Permissions.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Security.Cryptography.Xml.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Text.Encoding.CodePages.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Text.Encodings.Web.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\System.Text.Json.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\af\Humanizer.resources.dll
@@ -287,9 +292,8 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTm
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net7.0\System.Drawing.Common.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net8.0\System.Runtime.Caching.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net8.0\System.Text.Encoding.CodePages.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\PubTmp\Out\QuanLyCuaHangMyPham.deps.json

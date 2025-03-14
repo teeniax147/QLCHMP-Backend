@@ -336,8 +336,4 @@ D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\Syste
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Security.Cryptography.Xml.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\System.Text.Encoding.CodePages.dll
 D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\runtimes\win\lib\net8.0\System.Text.Encoding.CodePages.dll
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\QuanLyCuaHangMyPham.RazorAssemblyInfo.cache
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\QuanLyCuaHangMyPham.RazorAssemblyInfo.cs
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\obj\Release\net8.0\scopedcss\projectbundle\QuanLyCuaHangMyPham.bundle.scp.css
-D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\VNPAY.NET.dll
+D:\source\repos\QuanLyCuaHangMyPham\QuanLyCuaHangMyPham\bin\Release\net8.0\RestSharp.dll

@@ -18,6 +18,7 @@ public partial class Order
     public decimal? TotalAmount { get; set; }
 
     public string? ShippingAddress { get; set; }
+    public string? PhoneNumber { get; set; }
 
     public int? ShippingCompanyId { get; set; }
 

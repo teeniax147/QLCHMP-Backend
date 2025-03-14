@@ -9,7 +9,6 @@ using System.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
 using QuanLyCuaHangMyPham.Models;
-using QuanLyCuaHangMyPham.Services;
 using QuanLyCuaHangMyPham.IdentityModels;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
@@ -17,6 +16,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using QuanLyCuaHangMyPham.Services.VNPAY;
+using QuanLyCuaHangMyPham.Services.MOMO.Services;
+using QuanLyCuaHangMyPham.Services.MOMO.Models.Momo;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -71,6 +73,7 @@ builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // Giới hạn 50MB
 });
+builder.Services.AddSingleton<IVnpay, Vnpay>();
 // Đăng ký các dịch vụ cho API controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -116,13 +119,22 @@ builder.Services.AddSwaggerGen(c =>
 
 
 });
-builder.Services.AddHttpClient<MoMoPaymentService>();
+//Momo API Payment
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddScoped<IEmailService, EmailService>();
+// Đăng ký IMomoService với lớp triển khai MomoService
 builder.Services.AddEndpointsApiExplorer();  // Thêm dịch vụ để khám phá các API
 // Đăng ký MemoryCache
 builder.Services.AddMemoryCache();
-
+// Thêm dịch vụ session
+builder.Services.AddDistributedMemoryCache(); // Lưu trữ trong bộ nhớ
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Thời gian hết hạn của session
+    options.Cookie.HttpOnly = true; // Chỉ có thể truy cập session qua HTTP
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -157,10 +169,12 @@ app.UseStaticFiles(new StaticFileOptions
         }
     }
 });
-app.UseRouting(); // Đảm bảo routing được thiết lập sau UseStaticFiles
+
+
 // Sử dụng Https
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
+app.UseRouting(); // Đảm bảo routing được thiết lập sau UseStaticFiles
 // Sử dụng CORS
 app.UseCors("AllowFrontend");
 
@@ -169,7 +183,7 @@ app.UseAuthentication();
 
 // Sử dụng Authorization (Identity roles, claims)
 app.UseAuthorization();
-
+app.UseSession();
 app.MapControllers();
 
 app.Run();

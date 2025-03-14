@@ -59,7 +59,7 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             try
             {
-                string logoPath = null;
+                string? logoPath = null;
 
                 // Xử lý upload logo
                 if (brandDto.LogoFile != null && brandDto.LogoFile.Length > 0)
