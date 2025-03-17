@@ -40,7 +40,12 @@ builder.Services.AddCors(options =>
 
 // Đăng ký dịch vụ DbContext với chuỗi kết nối đến cơ sở dữ liệu của bạn
 builder.Services.AddDbContext<QuanLyCuaHangMyPhamContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("QuanLyCuaHangMyPhamContext")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("QuanLyCuaHangMyPhamContext"),
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+            sqlOptions.CommandTimeout(60); // Tăng timeout để giải quyết vấn đề WITH
+        }));
 
 // Thêm ASP.NET Identity để quản lý người dùng
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
