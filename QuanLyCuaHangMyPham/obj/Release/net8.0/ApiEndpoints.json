@@ -430,6 +430,22 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "AddToCartForGuest",
+    "RelativePath": "api/Carts/add-guest",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BAddToCartRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
     "Method": "ClearCart",
     "RelativePath": "api/Carts/clear",
     "HttpMethod": "DELETE",
@@ -440,8 +456,28 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "ClearCartForGuest",
+    "RelativePath": "api/Carts/clear-guest",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
     "Method": "GetCartDetails",
     "RelativePath": "api/Carts/details",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "GetCartDetailsForGuest",
+    "RelativePath": "api/Carts/details-guest",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -476,8 +512,40 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "PreviewOrderForGuest",
+    "RelativePath": "api/Carts/preview-guest",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BPreviewOrderRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
     "Method": "RemoveFromCart",
     "RelativePath": "api/Carts/remove",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BRemoveFromCartRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "RemoveFromCartForGuest",
+    "RelativePath": "api/Carts/remove-guest",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -501,6 +569,38 @@
       {
         "Name": "request",
         "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BRemoveItemRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "UpdateCartQuantity",
+    "RelativePath": "api/Carts/update",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BUpdateCartRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CartsController",
+    "Method": "UpdateCartQuantityForGuest",
+    "RelativePath": "api/Carts/update-guest",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CartsController\u002BUpdateCartRequest",
         "IsRequired": true
       }
     ],
@@ -1307,6 +1407,16 @@
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
     "Method": "CreateOrder",
     "RelativePath": "api/Orders/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
+    "Method": "CreateOrderForGuest",
+    "RelativePath": "api/Orders/create-guest",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -2368,17 +2478,17 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "startDate",
-        "Type": "System.DateTime",
+        "Name": "StartDate",
+        "Type": "System.String",
         "IsRequired": false
       },
       {
-        "Name": "endDate",
-        "Type": "System.DateTime",
+        "Name": "EndDate",
+        "Type": "System.String",
         "IsRequired": false
       },
       {
-        "Name": "format",
+        "Name": "Format",
         "Type": "System.String",
         "IsRequired": false
       }

@@ -666,7 +666,7 @@ public partial class QuanLyCuaHangMyPhamContext : IdentityDbContext<ApplicationU
                 .HasColumnName("price");
             // Thuộc tính ShockPrice với giá trị có thể null
 
-            
+
 
             // Thuộc tính ReviewCount với giá trị mặc định
             entity.Property(e => e.ReviewCount)

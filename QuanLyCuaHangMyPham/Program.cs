@@ -19,8 +19,11 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using QuanLyCuaHangMyPham.Services.VNPAY;
 using QuanLyCuaHangMyPham.Services.MOMO.Services;
 using QuanLyCuaHangMyPham.Services.MOMO.Models.Momo;
+using OfficeOpenXml;
 var builder = WebApplication.CreateBuilder(args);
 
+// Thiết lập giấy phép EPPlus
+ExcelPackage.LicenseContext = LicenseContext.Commercial;
 // Đặt tên cho CORS Policy
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 // Thêm CORS

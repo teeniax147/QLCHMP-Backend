@@ -18,7 +18,7 @@ public class ExportService
     public byte[] ExportToPdf<T>(string title, List<T> data)
     {
         if (data == null || !data.Any())
-            throw new ArgumentException("No data provided for PDF export.");
+            throw new ArgumentException("Không có dữ liệu để xuất PDF.");
 
         using var ms = new MemoryStream();
         using var writer = new PdfWriter(ms);
@@ -28,7 +28,6 @@ public class ExportService
         // Thêm tiêu đề
         document.Add(new Paragraph(title)
             .SetFontSize(20)
-            
             .SetTextAlignment(TextAlignment.CENTER));
 
         // Tạo bảng dữ liệu
@@ -39,7 +38,6 @@ public class ExportService
         foreach (var prop in properties)
         {
             table.AddHeaderCell(new Paragraph(prop.Name)
-                
                 .SetTextAlignment(TextAlignment.CENTER));
         }
 
@@ -48,7 +46,7 @@ public class ExportService
         {
             foreach (var prop in properties)
             {
-                var value = prop.GetValue(item)?.ToString() ?? "N/A";
+                var value = prop.GetValue(item)?.ToString() ?? "Không có dữ liệu";
                 table.AddCell(new Paragraph(value));
             }
         }
@@ -59,11 +57,10 @@ public class ExportService
         return ms.ToArray();
     }
 
-
     public byte[] ExportToExcel<T>(string title, List<T> data)
     {
         if (data == null || !data.Any())
-            throw new ArgumentException("No data provided for Excel export.");
+            throw new ArgumentException("Không có dữ liệu để xuất Excel.");
 
         using var package = new ExcelPackage();
         var worksheet = package.Workbook.Worksheets.Add(title);
@@ -75,15 +72,17 @@ public class ExportService
         worksheet.Cells["A1:H1"].Merge = true;
         worksheet.Cells["A1:H1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
-        // Tiêu đề cột
+        // Tiêu đề cột bằng tiếng Việt
         var properties = data.First().GetType().GetProperties();
+        worksheet.Cells[2, 1].Value = "Ngày"; // Thay "Date" thành "Ngày"
+        worksheet.Cells[2, 2].Value = "Tổng doanh thu"; // Thay "TotalRevenue" thành "Tổng doanh thu"
+        worksheet.Cells[2, 3].Value = "Tổng số đơn hàng"; // Thay "TotalOrders" thành "Tổng số đơn hàng"
+        // Tiêu đề cột
         for (int i = 0; i < properties.Length; i++)
         {
-            worksheet.Cells[2, i + 1].Value = properties[i].Name;
             worksheet.Cells[2, i + 1].Style.Font.Bold = true;
             worksheet.Cells[2, i + 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
         }
-
         // Thêm dữ liệu
         for (int i = 0; i < data.Count; i++)
         {
@@ -98,6 +97,4 @@ public class ExportService
 
         return package.GetAsByteArray();
     }
-
 }
-

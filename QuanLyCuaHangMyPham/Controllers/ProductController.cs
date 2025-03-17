@@ -312,34 +312,43 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPost("them-moi")]
         public async Task<ActionResult<Product>> PostProduct([FromForm] CreateProductRequest request)
         {
+            // Kiểm tra tính hợp lệ của Model
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Xử lý upload ảnh sản phẩm
             string imagePath = null;
 
+            // Xử lý upload ảnh sản phẩm (Ảnh có thể là null)
             if (request.ImageFile != null && request.ImageFile.Length > 0)
             {
-                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "products");
-                if (!Directory.Exists(uploadDir))
+                try
                 {
-                    Directory.CreateDirectory(uploadDir);
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "products");
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir); // Nếu không tồn tại thì tạo thư mục
+                    }
+
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(request.ImageFile.FileName);
+                    var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                    // Lưu ảnh vào thư mục
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await request.ImageFile.CopyToAsync(stream);
+                    }
+
+                    imagePath = $"/uploads/products/{uniqueFileName}";
                 }
-
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(request.ImageFile.FileName);
-                var filePath = Path.Combine(uploadDir, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                catch (Exception ex)
                 {
-                    await request.ImageFile.CopyToAsync(stream);
+                    return StatusCode(500, new { message = "Lỗi khi xử lý file ảnh.", error = ex.Message });
                 }
-
-                imagePath = $"/uploads/products/{uniqueFileName}";
             }
 
-            // Tìm danh sách thương hiệu từ BrandIds
+            // Truy vấn thương hiệu từ cơ sở dữ liệu
             var brands = await _context.Brands
                 .Where(b => request.BrandIds.Contains(b.Id))
                 .ToListAsync();
@@ -356,8 +365,8 @@ namespace QuanLyCuaHangMyPham.Controllers
                 Price = request.Price,
                 OriginalPrice = request.OriginalPrice,
                 Description = request.Description,
-                ImageUrl = imagePath, // Đường dẫn ảnh đã xử lý
-                Brand = brands.FirstOrDefault() // Lấy thương hiệu đầu tiên làm đại diện
+                ImageUrl = imagePath, // Nếu không có ảnh, thì imagePath sẽ là null
+                Brand = brands.FirstOrDefault() // Chọn thương hiệu đầu tiên làm đại diện
             };
 
             // Xử lý danh mục (Categories)
@@ -377,22 +386,22 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             try
             {
-                // Thêm sản phẩm mới
+                // Thêm sản phẩm mới vào cơ sở dữ liệu
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
 
-                // Tạo kho hàng với số lượng ban đầu = 0
+                // Tạo kho hàng với số lượng ban đầu là 0 và WarehouseLocation là tên sản phẩm
                 var inventory = new Inventory
                 {
                     ProductId = product.Id,
                     QuantityInStock = 0, // Mặc định số lượng ban đầu
-                    WarehouseLocation = "Chưa xác định",
+                    WarehouseLocation = product.Name, // Lưu tên sản phẩm vào WarehouseLocation
                     LastUpdated = DateTime.UtcNow
                 };
                 _context.Inventories.Add(inventory);
                 await _context.SaveChangesAsync();
 
-                // Chuẩn bị dữ liệu trả về, bao gồm tên thương hiệu
+                // Chuẩn bị dữ liệu trả về cho khách hàng
                 var response = new
                 {
                     Id = product.Id,
@@ -412,6 +421,8 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể lưu sản phẩm mới.", error = ex.Message });
             }
         }
+
+
 
 
         // PUT: api/san-pham/cap-nhat/{id}
