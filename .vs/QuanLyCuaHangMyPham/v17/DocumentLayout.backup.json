@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "D:\\source\\repos\\QuanLyCuaHangMyPham\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\quanlycuahangmypham.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\quanlycuahangmypham.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\services\\momo\\services\\momoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\services\\momo\\services\\momoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
@@ -11,16 +19,44 @@
       "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\models\\productcategory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\models\\productcategory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\controllers\\cartscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\controllers\\cartscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\models\\category.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\models\\category.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\controllers\\orderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\controllers\\orderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\services\\exportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\services\\exportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\controllers\\reportscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\controllers\\reportscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\controllers\\couponscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\controllers\\couponscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\models\\orderdetail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\models\\orderdetail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\models\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|solutionrelative:quanlycuahangmypham\\models\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4C1FFDEF-16D3-4477-AABE-783F35939BF9}|QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj|d:\\source\\repos\\quanlycuahangmypham\\quanlycuahangmypham\\data\\quanlycuahangmyphamcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -34,88 +70,209 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\appsettings.json",
-              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\appsettings.json",
-              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\appsettings.json",
-              "RelativeToolTip": "QuanLyCuaHangMyPham\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAaAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-03-17T14:06:02.044Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{a2c8b774-0984-495f-8428-e6140b2d66e0}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Program.cs",
-              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Program.cs",
-              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Program.cs",
-              "RelativeToolTip": "QuanLyCuaHangMyPham\\Program.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAAC8AAAAMAAAAAAAAAA==",
+              "Title": "MomoService.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Services\\MOMO\\Services\\MomoService.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Services\\MOMO\\Services\\MomoService.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Services\\MOMO\\Services\\MomoService.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Services\\MOMO\\Services\\MomoService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-17T07:45:28.698Z",
+              "WhenOpened": "2025-03-18T16:07:42.32Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "QuanLyCuaHangMyPhamContext.cs",
-              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
-              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
-              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
-              "RelativeToolTip": "QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAAADoAAAAAAAAAAAAAAA==",
+              "Title": "OrdersController.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\OrdersController.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Controllers\\OrdersController.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\OrdersController.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Controllers\\OrdersController.cs",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-16T02:48:37.858Z",
+              "WhenOpened": "2025-03-18T16:01:39.199Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "ProductController.cs",
-              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\ProductController.cs",
-              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Controllers\\ProductController.cs",
-              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\ProductController.cs",
-              "RelativeToolTip": "QuanLyCuaHangMyPham\\Controllers\\ProductController.cs",
-              "ViewState": "AgIAAAcDAAAAAAAAAAAAABYDAAAIAAAAAAAAAA==",
+              "Title": "CartsController.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\CartsController.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Controllers\\CartsController.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\CartsController.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Controllers\\CartsController.cs",
+              "ViewState": "AgIAAMcCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-14T20:02:42.199Z",
+              "WhenOpened": "2025-03-18T14:08:39.624Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "Category.cs",
-              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\Category.cs",
-              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Models\\Category.cs",
-              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\Category.cs",
-              "RelativeToolTip": "QuanLyCuaHangMyPham\\Models\\Category.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAswBgAAAAAAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Program.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Program.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Program.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Program.cs",
+              "ViewState": "AgIAAFgAAAAAAAAAAAAQwNIAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-15T12:46:45.026Z",
+              "WhenOpened": "2025-03-18T09:41:39.832Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "ProductCategory.cs",
-              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\ProductCategory.cs",
-              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Models\\ProductCategory.cs",
-              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\ProductCategory.cs",
-              "RelativeToolTip": "QuanLyCuaHangMyPham\\Models\\ProductCategory.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\appsettings.json",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\appsettings.json",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\appsettings.json",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAACtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-03-18T09:05:31.178Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "QuanLyCuaHangMyPham.csproj",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+              "ViewState": "AgIAACEAAAAAAAAAAAAnwCoAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-03-18T09:24:01.823Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "CouponsController.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\CouponsController.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Controllers\\CouponsController.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\CouponsController.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Controllers\\CouponsController.cs",
+              "ViewState": "AgIAAAkBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-16T02:47:11.415Z",
+              "WhenOpened": "2025-03-18T14:10:17.745Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ExportService.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Services\\ExportService.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Services\\ExportService.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Services\\ExportService.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Services\\ExportService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEQAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T14:14:18.096Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Product.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\Product.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Models\\Product.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\Product.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Models\\Product.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T14:10:58.922Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ReportsController.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\ReportsController.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Controllers\\ReportsController.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\ReportsController.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Controllers\\ReportsController.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAqwDoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T09:52:06.757Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Dockerfile",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Dockerfile",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Dockerfile",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T14:11:16.029Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Order.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\Order.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Models\\Order.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\Order.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Models\\Order.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAswDIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T13:11:30.437Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "CategoriesController.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\CategoriesController.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Controllers\\CategoriesController.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Controllers\\CategoriesController.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Controllers\\CategoriesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T08:03:54.364Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "OrderDetail.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\OrderDetail.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Models\\OrderDetail.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Models\\OrderDetail.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Models\\OrderDetail.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T14:03:18.26Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "QuanLyCuaHangMyPhamContext.cs",
+              "DocumentMoniker": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
+              "RelativeDocumentMoniker": "QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
+              "ToolTip": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
+              "RelativeToolTip": "QuanLyCuaHangMyPham\\Data\\QuanLyCuaHangMyPhamContext.cs",
+              "ViewState": "AgIAAC4DAAAAAAAAAAAQwFEDAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-18T11:56:40.505Z",
               "EditorCaption": ""
             }
           ]

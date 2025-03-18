@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangMyPham.Data;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,25 +20,12 @@ namespace QuanLyCuaHangMyPham.Controllers
             _exportService = exportService;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("revenue/from-to")]
-        public async Task<IActionResult> GetRevenueFromToDate([FromQuery] RevenueRequest request)
+        public async Task<IActionResult> GetRevenueFromToDate(DateTime startDate, DateTime endDate, string format = "json")
         {
-            DateTime start, end;
-
-            // Kiểm tra và chuyển đổi định dạng ngày tháng
-            if (!DateTime.TryParseExact(request.StartDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out start))
-            {
-                return BadRequest("Ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd/MM/yyyy.");
-            }
-
-            if (!DateTime.TryParseExact(request.EndDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out end))
-            {
-                return BadRequest("Ngày kết thúc không hợp lệ. Vui lòng sử dụng định dạng dd/MM/yyyy.");
-            }
-
-            // Tiến hành xử lý dữ liệu
             var revenueData = await _context.Orders
-                .Where(o => o.OrderDate.HasValue && o.OrderDate.Value >= start && o.OrderDate.Value <= end)
+                .Where(o => o.OrderDate.HasValue && o.OrderDate.Value >= startDate && o.OrderDate.Value <= endDate)
                 .GroupBy(o => o.OrderDate.Value.Date)
                 .Select(g => new
                 {
@@ -51,25 +36,27 @@ namespace QuanLyCuaHangMyPham.Controllers
                 .OrderBy(x => x.Date)
                 .ToListAsync();
 
-            // Xử lý xuất dữ liệu theo định dạng
-            if (request.Format.ToLower() == "pdf")
+            if (format.ToLower() == "pdf")
             {
+                // Sử dụng QuestPDF để xuất PDF
                 var pdfBytes = _exportService.ExportToPdf("Báo cáo doanh thu", revenueData);
                 return File(pdfBytes, "application/pdf", "BaoCaoDoanhThu.pdf");
             }
-            else if (request.Format.ToLower() == "excel")
+            else if (format.ToLower() == "excel")
             {
+                // Sử dụng ClosedXML để xuất Excel
                 var excelBytes = _exportService.ExportToExcel("Báo cáo doanh thu", revenueData);
                 return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BaoCaoDoanhThu.xlsx");
             }
 
             return Ok(new
             {
-                StartDate = start,
-                EndDate = end,
+                StartDate = startDate,
+                EndDate = endDate,
                 RevenueData = revenueData
             });
         }
+
 
         // 2. Thống kê doanh thu theo thương hiệu trong khoảng thời gian
         [HttpGet("revenue/brands/from-to")]
@@ -353,28 +340,6 @@ namespace QuanLyCuaHangMyPham.Controllers
                 EndDate = endDate,
                 TopCustomers = topCustomers
             });
-        }
-        public class RevenueRequest
-        {
-            [Required(ErrorMessage = "Ngày bắt đầu (startDate) không được bỏ trống.")]
-            [DataType(DataType.Date, ErrorMessage = "Ngày bắt đầu (startDate) phải có định dạng 2025-02-15T00:00:00.")]
-            [Display(Name = "Ngày bắt đầu")]
-            public string StartDate { get; set; }
-
-            [Required(ErrorMessage = "Ngày kết thúc (endDate) không được bỏ trống.")]
-            [DataType(DataType.Date, ErrorMessage = "Ngày kết thúc (endDate) phải có định dạng 2025-02-15T00:00:00.")]
-            [Display(Name = "Ngày kết thúc")]
-            public string EndDate { get; set; }
-            [RegularExpression("^(json|excel|PDF)$", ErrorMessage = "Định dạng báo cáo không hợp lệ.")]
-            [Display(Name = "Định dạng báo cáo")]
-            public string Format { get; set; }
-        }
-
-        public enum ReportFormat
-        {
-            json,
-            excel,
-            pdf
         }
     }
 }

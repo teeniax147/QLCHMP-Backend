@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "6u8Bd0oQ0Qo7fCuR7aO8AMrhzdOuMRkGjL76b+tnbvw=",
+  "Hash": "JjLzP+iRlUpcuiSsbgoIfldWOMNO3HGu+IMHFtDLKkQ=",
   "Source": "QuanLyCuaHangMyPham",
   "BasePath": "_content/QuanLyCuaHangMyPham",
   "Mode": "Default",
@@ -984,6 +984,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\products\\aaf377f3-6118-40d3-8f8f-edb5717efa46_Bản sao của Bản sao của Blue Futuristic Ai Technology Webinar Conference Facebook Post.png"
+    },
+    {
+      "Identity": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\uploads\\products\\b9e720ed-ed7e-401e-ae65-cffb6ca4a41b_472977229_1813900109147372_5764525493169436514_n.jpg",
+      "SourceId": "QuanLyCuaHangMyPham",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\",
+      "BasePath": "_content/QuanLyCuaHangMyPham",
+      "RelativePath": "uploads/products/b9e720ed-ed7e-401e-ae65-cffb6ca4a41b_472977229_1813900109147372_5764525493169436514_n.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\products\\b9e720ed-ed7e-401e-ae65-cffb6ca4a41b_472977229_1813900109147372_5764525493169436514_n.jpg"
     },
     {
       "Identity": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\wwwroot\\uploads\\products\\bab6b1dc-5d77-46eb-b339-8c484bca8c71_logo6.png",

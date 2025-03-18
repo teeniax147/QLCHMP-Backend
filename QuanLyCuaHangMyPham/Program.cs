@@ -19,11 +19,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using QuanLyCuaHangMyPham.Services.VNPAY;
 using QuanLyCuaHangMyPham.Services.MOMO.Services;
 using QuanLyCuaHangMyPham.Services.MOMO.Models.Momo;
-using OfficeOpenXml;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Thiết lập giấy phép EPPlus
-ExcelPackage.LicenseContext = LicenseContext.Commercial;
 // Đặt tên cho CORS Policy
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 // Thêm CORS
@@ -39,6 +37,7 @@ builder.Services.AddCors(options =>
 });
 
 // Đăng ký dịch vụ DbContext với chuỗi kết nối đến cơ sở dữ liệu của bạn
+// ĐÃ ĐƯỢC SỬA ĐỔI: Thêm cấu hình timeout và retry
 builder.Services.AddDbContext<QuanLyCuaHangMyPhamContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("QuanLyCuaHangMyPhamContext"),
         sqlServerOptionsAction: sqlOptions =>
@@ -77,11 +76,14 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = key
     };
 });
+
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // Giới hạn 50MB
 });
+
 builder.Services.AddSingleton<IVnpay, Vnpay>();
+
 // Đăng ký các dịch vụ cho API controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -93,7 +95,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new DateTimeFormatConverter("dd/MM/yyyy HH:mm:ss")); // Add custom DateTime format here
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
+
 builder.Services.AddTransient<ExportService>();
+
 // Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -124,18 +128,21 @@ builder.Services.AddSwaggerGen(c =>
             new string[] { }
         }
     });
-
-
 });
+
 //Momo API Payment
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
 builder.Services.AddScoped<IMomoService, MomoService>();
+
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Đăng ký IMomoService với lớp triển khai MomoService
 builder.Services.AddEndpointsApiExplorer();  // Thêm dịch vụ để khám phá các API
+
 // Đăng ký MemoryCache
 builder.Services.AddMemoryCache();
+
 // Thêm dịch vụ session
 builder.Services.AddDistributedMemoryCache(); // Lưu trữ trong bộ nhớ
 builder.Services.AddSession(options =>
@@ -143,6 +150,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30); // Thời gian hết hạn của session
     options.Cookie.HttpOnly = true; // Chỉ có thể truy cập session qua HTTP
 });
+
+// XÂY DỰNG ỨNG DỤNG - SAU DÒNG NÀY KHÔNG ĐƯỢC THÊM DỊCH VỤ
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -156,6 +165,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Enviro
         c.RoutePrefix = "swagger"; // Swagger ở root URL
     });
 }
+
+// ĐÃ XÓA: Đoạn code đăng ký DbContext ở đây vì nó đã được chuyển lên trên
+
 //// Cấu hình ứng dụng trong môi trường Production
 //if (app.Environment.IsProduction())
 //{
@@ -164,7 +176,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Enviro
 //    app.UseHttpsRedirection();
 //    app.UseHsts();  // Enable HTTP Strict Transport Security
 //}
+
 Console.WriteLine($"Moi truong hien tai: {app.Environment.EnvironmentName}");
+
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = new FileExtensionContentTypeProvider
@@ -178,11 +192,11 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
-
 // Sử dụng Https
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting(); // Đảm bảo routing được thiết lập sau UseStaticFiles
+
 // Sử dụng CORS
 app.UseCors("AllowFrontend");
 

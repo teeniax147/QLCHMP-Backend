@@ -18,7 +18,6 @@ namespace QuanLyCuaHangMyPham.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class CartsController : ControllerBase
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
@@ -272,7 +271,9 @@ namespace QuanLyCuaHangMyPham.Controllers
 
                 var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartItemsJson);
 
-                decimal originalTotalAmount = cartItems.Sum(ci => ci.Product.Price * ci.Quantity);
+                decimal originalTotalAmount = cartItems
+    .Where(ci => ci.Product != null)
+    .Sum(ci => ci.Product.Price * ci.Quantity);
                 decimal discountAmount = 0;
 
                 if (!string.IsNullOrEmpty(request.CouponCode))
@@ -409,7 +410,11 @@ namespace QuanLyCuaHangMyPham.Controllers
 
                 // Lưu giỏ hàng vào session
                 HttpContext.Session.SetString("CartItems", JsonConvert.SerializeObject(cartItems));
-
+                
+                if (string.IsNullOrEmpty(cartItemsJson))
+                {
+                    return BadRequest("Giỏ hàng không được lưu.");
+                }
                 return Ok("Sản phẩm đã được thêm vào giỏ hàng.");
             }
             catch (Exception ex)

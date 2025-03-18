@@ -2478,17 +2478,17 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "StartDate",
-        "Type": "System.String",
+        "Name": "startDate",
+        "Type": "System.DateTime",
         "IsRequired": false
       },
       {
-        "Name": "EndDate",
-        "Type": "System.String",
+        "Name": "endDate",
+        "Type": "System.DateTime",
         "IsRequired": false
       },
       {
-        "Name": "Format",
+        "Name": "format",
         "Type": "System.String",
         "IsRequired": false
       }
