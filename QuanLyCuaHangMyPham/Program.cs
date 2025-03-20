@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using QuanLyCuaHangMyPham.Services.VNPAY;
 using QuanLyCuaHangMyPham.Services.MOMO.Services;
 using QuanLyCuaHangMyPham.Services.MOMO.Models.Momo;
-
+using Newtonsoft.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -43,7 +43,7 @@ builder.Services.AddDbContext<QuanLyCuaHangMyPhamContext>(options =>
         sqlServerOptionsAction: sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure();
-            sqlOptions.CommandTimeout(60); // Tăng timeout để giải quyết vấn đề WITH
+            sqlOptions.CommandTimeout(6000); // Tăng timeout để giải quyết vấn đề WITH
         }));
 
 // Thêm ASP.NET Identity để quản lý người dùng
@@ -94,6 +94,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.Converters.Add(new DateTimeFormatConverter("dd/MM/yyyy HH:mm:ss")); // Add custom DateTime format here
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+
     });
 
 builder.Services.AddTransient<ExportService>();
@@ -148,7 +149,8 @@ builder.Services.AddDistributedMemoryCache(); // Lưu trữ trong bộ nhớ
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30); // Thời gian hết hạn của session
-    options.Cookie.HttpOnly = true; // Chỉ có thể truy cập session qua HTTP
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
 // XÂY DỰNG ỨNG DỤNG - SAU DÒNG NÀY KHÔNG ĐƯỢC THÊM DỊCH VỤ

@@ -19,7 +19,7 @@ public partial class Order
 
     public string? ShippingAddress { get; set; }
     public string? PhoneNumber { get; set; }
-
+    public string? Email { get; set; }
     public int? ShippingCompanyId { get; set; }
 
     public string? ShippingMethod { get; set; }

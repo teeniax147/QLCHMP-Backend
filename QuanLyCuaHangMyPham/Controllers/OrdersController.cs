@@ -13,6 +13,7 @@ using QuanLyCuaHangMyPham.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore.Storage;
 using static QuanLyCuaHangMyPham.Controllers.CartsController;
+using Microsoft.Data.SqlClient;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -21,11 +22,13 @@ namespace QuanLyCuaHangMyPham.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
+        private readonly ILogger<CartsController> _logger;
         private readonly IMemoryCache _cache;  // Khai báo _cache
-        public OrdersController(QuanLyCuaHangMyPhamContext context, IMemoryCache cache)
+        public OrdersController(QuanLyCuaHangMyPhamContext context, IMemoryCache cache, ILogger<CartsController> logger)
         {
             _context = context;
             _cache = cache;
+            _logger = logger;
         }
 
         // GET: api/Orders
@@ -250,6 +253,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                             ShippingCompanyId = shippingCompany?.Id,
                             ShippingAddress = previewOrder.ShippingAddress ?? customer.User.Address,
                             PhoneNumber = previewOrder.PhoneNumber ?? customer.User.PhoneNumber,
+                            Email = previewOrder.Email ?? customer.User.Email,
                             OriginalTotalAmount = previewOrder.OriginalTotalAmount,
                             TotalAmount = previewOrder.TotalAmount,
                             ShippingCost = previewOrder.ShippingCost,
@@ -304,75 +308,162 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpPost("create-guest")]
         public async Task<IActionResult> CreateOrderForGuest()
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            // Sử dụng execution strategy của DbContext
+            return await _context.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
+                // Bắt đầu transaction
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
                 try
                 {
                     // Lấy thông tin từ session
                     var previewDataJson = HttpContext.Session.GetString("PreviewOrderData");
                     if (string.IsNullOrEmpty(previewDataJson))
                     {
-                        return BadRequest("Không có dữ liệu đơn hàng tạm thời. Vui lòng thực hiện lại bước Preview.");
+                        return BadRequest(new { Message = "Không có dữ liệu đơn hàng tạm thời. Vui lòng thực hiện lại bước Preview." });
                     }
 
-                    var previewData = JsonConvert.DeserializeObject<PreviewOrderGuestResponse>(previewDataJson);
+                    var previewData = JsonConvert.DeserializeObject<dynamic>(previewDataJson);
 
-                    // Tạo đơn hàng mới cho khách vãng lai (không cần tạo Customer mới)
+                    // Kiểm tra thông tin bắt buộc từ preview
+                    var shippingAddress = (string)previewData.ShippingAddress;
+                    var phoneNumber = (string)previewData.PhoneNumber;
+
+                    if (string.IsNullOrWhiteSpace(shippingAddress))
+                    {
+                        return BadRequest(new { Message = "Địa chỉ giao hàng không được để trống." });
+                    }
+
+                    if (string.IsNullOrWhiteSpace(phoneNumber))
+                    {
+                        return BadRequest(new { Message = "Số điện thoại không được để trống." });
+                    }
+
+                    // Lấy giỏ hàng từ session
+                    var cartItemsJson = HttpContext.Session.GetString("CartItems");
+                    if (string.IsNullOrEmpty(cartItemsJson))
+                    {
+                        return BadRequest(new { Message = "Giỏ hàng trống. Vui lòng thêm sản phẩm." });
+                    }
+
+                    var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartItemsJson);
+                    if (cartItems == null || !cartItems.Any())
+                    {
+                        return BadRequest(new { Message = "Giỏ hàng trống. Vui lòng thêm sản phẩm." });
+                    }
+
+                    // Lấy thông tin sản phẩm sử dụng SQL thô
+                    var productIds = cartItems.Select(ci => ci.ProductId).Distinct().ToList();
+                    Dictionary<int, decimal> products;
+
+                    using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+                    {
+                        await connection.OpenAsync();
+
+                        var productQuery = $@"
+                    SELECT id, price 
+                    FROM Products 
+                    WHERE id IN ({string.Join(",", productIds)})";
+
+                        using (var command = new SqlCommand(productQuery, connection))
+                        {
+                            products = new Dictionary<int, decimal>();
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    products[reader.GetInt32(0)] = reader.GetDecimal(1);
+                                }
+                            }
+                        }
+                    }
+
+                    // Tìm mã giảm giá nếu có
+                    int? couponId = null;
+                    string couponCode = (string)previewData.CouponCode;
+                    if (!string.IsNullOrEmpty(couponCode))
+                    {
+                        var coupon = await _context.Coupons
+                            .FirstOrDefaultAsync(c => c.Code == couponCode);
+
+                        if (coupon != null && coupon.QuantityAvailable > 0)
+                        {
+                            couponId = coupon.Id;
+                            // Giảm số lượng mã giảm giá
+                            coupon.QuantityAvailable--;
+                        }
+                    }
+
+                    // Tạo đơn hàng mới cho khách vãng lai
                     var order = new Order
                     {
                         CustomerId = 13, // Gán CustomerId mặc định là 13
-                        CouponId = string.IsNullOrEmpty(previewData.CouponCode)
-    ? null
-    : (await _context.Coupons.FirstOrDefaultAsync(c => c.Code == previewData.CouponCode))?.Id,
-                        PaymentMethodId = previewData.PaymentMethodId,
-                        ShippingCompanyId = previewData.ShippingCompanyId,
-                        ShippingAddress = previewData.ShippingAddress,
-                        PhoneNumber = previewData.PhoneNumber,
-                        OriginalTotalAmount = previewData.OriginalTotalAmount,
-                        TotalAmount = previewData.TotalAmount,
-                        ShippingCost = previewData.ShippingCost,
-                        DiscountApplied = previewData.DiscountAmount,
+                        CouponId = couponId,
+                        PaymentMethodId = (int?)previewData.PaymentMethodId,
+                        ShippingCompanyId = (int?)previewData.ShippingCompanyId,
+                        ShippingAddress = shippingAddress,
+                        PhoneNumber = phoneNumber,
+                        OriginalTotalAmount = (decimal)previewData.OriginalTotalAmount,
+                        TotalAmount = (decimal)previewData.TotalAmount,
+                        ShippingCost = (decimal)previewData.ShippingCost,
+                        DiscountApplied = (decimal)previewData.DiscountAmount,
                         OrderDate = DateTime.Now,
                         Status = "Chờ Xác Nhận",
                         PaymentStatus = "Chưa Thanh Toán"
                     };
-
                     _context.Orders.Add(order);
                     await _context.SaveChangesAsync();
 
-                    // Lấy giỏ hàng từ session
-                    var cartItemsJson = HttpContext.Session.GetString("CartItems");
-                    var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartItemsJson);
-
                     // Thêm chi tiết đơn hàng
+                    var orderDetails = new List<OrderDetail>();
                     foreach (var item in cartItems)
                     {
-                        _context.OrderDetails.Add(new OrderDetail
+                        if (!products.TryGetValue(item.ProductId, out decimal unitPrice))
+                        {
+                            throw new Exception($"Không tìm thấy giá cho sản phẩm ID {item.ProductId}");
+                        }
+
+                        orderDetails.Add(new OrderDetail
                         {
                             OrderId = order.Id,
                             ProductId = item.ProductId,
                             Quantity = item.Quantity,
-                            UnitPrice = item.Product.Price,
-                            TotalPrice = item.Quantity * item.Product.Price
+                            UnitPrice = unitPrice,
+                            TotalPrice = item.Quantity * unitPrice
                         });
                     }
 
-                    await _context.SaveChangesAsync(); // Lưu OrderDetails sau khi lưu Order
+                    _context.OrderDetails.AddRange(orderDetails);
+                    await _context.SaveChangesAsync();
 
                     // Xóa giỏ hàng
                     HttpContext.Session.Remove("CartItems");
                     HttpContext.Session.Remove("PreviewOrderData");
 
+                    // Commit transaction
                     await transaction.CommitAsync();
 
-                    return Ok(new { Message = "Đơn hàng đã được tạo.", OrderId = order.Id });
+                    return Ok(new
+                    {
+                        Message = "Đơn hàng đã được tạo thành công.",
+                        OrderId = order.Id
+                    });
                 }
                 catch (Exception ex)
                 {
+                    // Rollback transaction
                     await transaction.RollbackAsync();
-                    return StatusCode(500, new { Message = "Đã xảy ra lỗi trong quá trình tạo đơn hàng.", Error = ex.Message });
+
+                    // Ghi log lỗi
+                    Console.WriteLine($"Lỗi khi tạo đơn hàng cho khách: {ex}");
+
+                    return StatusCode(500, new
+                    {
+                        Message = "Đã xảy ra lỗi trong quá trình tạo đơn hàng.",
+                        Error = ex.Message
+                    });
                 }
-            }
+            });
         }
         // Hủy đơn hàng (chỉ dành cho Customer, chỉ khi đơn hàng ở trạng thái Pending)
         [Authorize(Roles = "Customer")]
@@ -467,6 +558,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             public int? PaymentMethodId { get; set; }
             public string? ShippingAddress { get; set; }
             public string? PhoneNumber { get; set; }
+            public string? Email { get; set; }
         }
         public class PreviewOrderGuestResponse
         {
@@ -475,6 +567,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             public int ShippingCompanyId { get; set; }
             public string ShippingAddress { get; set; }
             public string PhoneNumber { get; set; }
+            public string? Email { get; set; }
             public decimal OriginalTotalAmount { get; set; }
             public decimal TotalAmount { get; set; }
             public decimal ShippingCost { get; set; }
