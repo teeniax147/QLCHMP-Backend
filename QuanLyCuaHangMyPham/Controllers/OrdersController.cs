@@ -162,6 +162,129 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return StatusCode(500, new { message = "Lỗi khi lấy danh sách đơn hàng.", error = ex.Message });
             }
         }
+        [HttpGet("filter-by-status")]
+        public async Task<IActionResult> FilterOrdersByStatus(string status)
+        {
+            // Kiểm tra giá trị status hợp lệ
+            if (!new[] { "Chờ Xác Nhận", "Chờ Lấy Hàng", "Đang Giao Hàng", "Đã Giao", "Đã Hủy" }.Contains(status))
+            {
+                return BadRequest("Trạng thái không hợp lệ.");
+            }
+
+            var orders = await _context.Orders
+                .Where(o => o.Status == status)
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c.User)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.Coupon)
+                .Include(o => o.ShippingCompany)
+                .Include(o => o.PaymentMethod)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return Ok(orders.Select(o => new
+            {
+                o.Id,
+                o.OrderDate,
+                o.Status,
+                o.TotalAmount,
+                o.DiscountApplied,
+                o.ShippingCost,
+                o.ShippingAddress,
+                o.EstimatedDeliveryDate,
+                CustomerName = $"{o.Customer.User.FirstName} {o.Customer.User.LastName}",
+                OrderDetails = o.OrderDetails.Select(od => new
+                {
+                    od.ProductId,
+                    od.Product.Name,
+                    od.Quantity,
+                    od.UnitPrice,
+                    od.TotalPrice
+                })
+            }));
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("by-date")]
+        public async Task<IActionResult> GetOrdersByDate(DateTime date)
+        {
+            var ordersOnDate = await _context.Orders
+                .Where(o => o.OrderDate.HasValue && o.OrderDate.Value.Date == date.Date)
+                .Select(o => new OrderSummaryDto
+                {
+                    OrderId = o.Id,
+                    CustomerId = o.CustomerId,
+                    CustomerName = _context.Users
+                        .Where(u => u.Id == o.Customer.UserId)
+                        .Select(u => $"{u.FirstName} {u.LastName}")
+                        .FirstOrDefault(),
+                    TotalAmount = o.TotalAmount ?? 0m,
+                    OriginalTotalAmount = o.OriginalTotalAmount ?? 0m,
+                    OrderDate = o.OrderDate.Value,
+                    Status = o.Status,
+                    ShippingAddress = o.ShippingAddress,
+                    ShippingMethod = o.ShippingMethod,
+                    PaymentStatus = o.PaymentStatus,
+                    PhoneNumber = o.PhoneNumber,
+                    Email = o.Email
+                })
+                .ToListAsync();
+
+            return Ok(ordersOnDate);
+        }
+        //dùng để sử dụng cho reportcontroller
+        [Authorize(Roles = "Admin")]
+        [HttpGet("order-details/{orderId}")]
+        public async Task<IActionResult> GetOrderDetailsById(int orderId)
+        {
+            var orderInfo = await _context.Orders
+                .Where(o => o.Id == orderId)
+                .Select(o => new
+                {
+                    OrderId = o.Id,
+                    CustomerId = o.CustomerId,
+                    CustomerName = _context.Users
+                        .Where(u => u.Id == o.Customer.UserId)
+                        .Select(u => $"{u.FirstName} {u.LastName}")
+                        .FirstOrDefault(),
+                    TotalAmount = o.TotalAmount ?? 0m,
+                    OriginalTotalAmount = o.OriginalTotalAmount ?? 0m,
+                    OrderDate = o.OrderDate,
+                    Status = o.Status,
+                    ShippingAddress = o.ShippingAddress,
+                    ShippingMethod = o.ShippingMethod,
+                    PaymentStatus = o.PaymentStatus,
+                    PhoneNumber = o.PhoneNumber,
+                    Email = o.Email,
+                    OrderNotes = o.OrderNotes,
+                    EstimatedDeliveryDate = o.EstimatedDeliveryDate
+                })
+                .FirstOrDefaultAsync();
+
+            if (orderInfo == null)
+            {
+                return NotFound("Không tìm thấy đơn hàng.");
+            }
+
+            var orderDetails = await _context.OrderDetails
+                .Where(od => od.OrderId == orderId)
+                .Select(od => new OrderDetailDto
+                {
+                    ProductId = od.ProductId,
+                    ProductVariation = od.ProductVariation,
+                    Quantity = od.Quantity ?? 0,
+                    UnitPrice = od.UnitPrice ?? 0m,
+                    TotalPrice = od.TotalPrice ?? 0m
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                OrderInfo = orderInfo,
+                OrderDetails = orderDetails
+            });
+        }
+        //dùng để sử dụng cho reportcontroller
 
         [Authorize]
         [HttpGet("orders/{orderId}/details")]
@@ -594,6 +717,29 @@ namespace QuanLyCuaHangMyPham.Controllers
             public string Status { get; set; }
             public string PaymentStatus { get; set; }
             public DateTime? EstimatedDeliveryDate { get; set; }
+        }
+        public class OrderSummaryDto
+        {
+            public int OrderId { get; set; }
+            public int CustomerId { get; set; }
+            public string CustomerName { get; set; }
+            public decimal TotalAmount { get; set; }
+            public decimal OriginalTotalAmount { get; set; }
+            public DateTime OrderDate { get; set; }
+            public string Status { get; set; }
+            public string ShippingAddress { get; set; }
+            public string ShippingMethod { get; set; }
+            public string PaymentStatus { get; set; }
+            public string PhoneNumber { get; set; }
+            public string Email { get; set; }
+        }
+        public class OrderDetailDto
+        {
+            public int ProductId { get; set; }
+            public string ProductVariation { get; set; }
+            public int Quantity { get; set; }
+            public decimal UnitPrice { get; set; }
+            public decimal TotalPrice { get; set; }
         }
     }
 }

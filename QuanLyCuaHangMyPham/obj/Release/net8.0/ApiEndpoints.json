@@ -1203,8 +1203,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "membershipLevel",
-        "Type": "QuanLyCuaHangMyPham.Models.MembershipLevel",
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.CreateMembershipLevelRequest",
         "IsRequired": true
       }
     ],
@@ -1260,8 +1260,8 @@
         "IsRequired": true
       },
       {
-        "Name": "membershipLevel",
-        "Type": "QuanLyCuaHangMyPham.Models.MembershipLevel",
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.UpdateMembershipLevelRequest",
         "IsRequired": true
       }
     ],
@@ -1281,6 +1281,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.MembershipLevelsController",
+    "Method": "GetCustomerMembershipInfo",
+    "RelativePath": "api/MembershipLevels/CustomerMembershipInfo",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -1431,6 +1441,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
+    "Method": "FilterOrdersByStatus",
+    "RelativePath": "api/Orders/filter-by-status",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {

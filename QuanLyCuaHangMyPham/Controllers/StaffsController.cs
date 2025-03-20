@@ -82,7 +82,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok("Cập nhật thông tin nhân viên thành công.");
         }
 
         // POST: api/Staff
@@ -100,7 +100,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             _context.Staff.Add(staff);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStaff", new { id = staff.StaffId }, staff);
+            return Ok("Tạo nhân viên mới thành công.");
         }
 
         // DELETE: api/Staff/5
@@ -117,7 +117,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             _context.Staff.Remove(staff);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok("Xóa nhân viên thành công.");
         }
 
         // Kiểm tra nhân viên tồn tại
