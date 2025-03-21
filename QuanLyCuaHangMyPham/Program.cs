@@ -153,7 +153,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
+// Trong phương thức ConfigureServices của Startup.cs hoặc Program.cs
+builder.Services.AddHttpClient();
 // XÂY DỰNG ỨNG DỤNG - SAU DÒNG NÀY KHÔNG ĐƯỢC THÊM DỊCH VỤ
 var app = builder.Build();
 

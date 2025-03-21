@@ -664,7 +664,89 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok("Đơn hàng đã được hủy bởi bên bán.");
         }
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchOrders(
+    string? searchTerm,
+    int page = 1,
+    int pageSize = 10,
+    string? status = null)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 50) pageSize = 10;
 
+            // Bắt đầu với truy vấn IQueryable
+            var query = _context.Orders
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c.User)
+                .AsQueryable();
+
+            // Áp dụng tìm kiếm nếu có searchTerm
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim().ToLower();
+                query = query.Where(o =>
+                    // Tìm theo tên khách hàng (kết hợp FirstName và LastName)
+                    (o.Customer.User.FirstName + " " + o.Customer.User.LastName).ToLower().Contains(searchTerm) ||
+                    // Tìm theo PhoneNumber
+                    (o.PhoneNumber != null && o.PhoneNumber.ToLower().Contains(searchTerm)) ||
+                    // Tìm theo Email
+                    (o.Email != null && o.Email.ToLower().Contains(searchTerm))
+                );
+            }
+
+            // Lọc theo trạng thái nếu được chỉ định
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(o => o.Status != null && o.Status.ToLower() == status.ToLower());
+            }
+
+            // Đếm tổng số kết quả để tính phân trang
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            // Lấy dữ liệu theo trang
+            var orders = await query
+                .OrderByDescending(o => o.OrderDate) // Sắp xếp mới nhất trước
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new OrderViewModel
+                {
+                    Id = o.Id,
+                    OrderDate = o.OrderDate,
+                    Status = o.Status,
+                    PaymentStatus = o.PaymentStatus,
+                    TotalAmount = o.TotalAmount,
+                    CustomerName = o.Customer.User.FirstName + " " + o.Customer.User.LastName,
+                    PhoneNumber = o.PhoneNumber,
+                    Email = o.Email,
+                    ShippingAddress = o.ShippingAddress
+                })
+                .ToListAsync();
+
+            // Trả về kết quả kèm thông tin phân trang
+            return Ok(new
+            {
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                CurrentPage = page,
+                PageSize = pageSize,
+                Orders = orders
+            });
+        }
+
+        // ViewModel để trả về kết quả tìm kiếm
+        public class OrderViewModel
+        {
+            public int Id { get; set; }
+            public DateTime? OrderDate { get; set; }
+            public string Status { get; set; }
+            public string PaymentStatus { get; set; }
+            public decimal? TotalAmount { get; set; }
+            public string CustomerName { get; set; }
+            public string PhoneNumber { get; set; }
+            public string Email { get; set; }
+            public string ShippingAddress { get; set; }
+        }
 
         private bool OrderExists(int id)
         {

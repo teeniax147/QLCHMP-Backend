@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangMyPham.Data;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -22,8 +24,26 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("revenue/from-to")]
-        public async Task<IActionResult> GetRevenueFromToDate(DateTime startDate, DateTime endDate, string format = "json")
+        public async Task<IActionResult> GetRevenueFromToDate(string startDateStr, string endDateStr, string format = "json")
         {
+            // Hỗ trợ nhiều định dạng ngày
+            string[] dateFormats = { "dd-MM-yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
+
+            // Phân tích chuỗi ngày bắt đầu
+            if (!DateTime.TryParseExact(startDateStr, dateFormats, CultureInfo.InvariantCulture,
+                                       DateTimeStyles.None, out DateTime startDate))
+            {
+                return BadRequest("Định dạng ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd-MM-yyyy, dd/MM/yyyy hoặc yyyy-MM-dd");
+            }
+
+            // Phân tích chuỗi ngày kết thúc
+            if (!DateTime.TryParseExact(endDateStr, dateFormats, CultureInfo.InvariantCulture,
+                                       DateTimeStyles.None, out DateTime endDate))
+            {
+                return BadRequest("Định dạng ngày kết thúc không hợp lệ. Vui lòng sử dụng định dạng dd-MM-yyyy, dd/MM/yyyy hoặc yyyy-MM-dd");
+            }
+
+            // Phần còn lại giữ nguyên
             var revenueData = await _context.Orders
                 .Where(o => o.OrderDate.HasValue && o.OrderDate.Value >= startDate && o.OrderDate.Value <= endDate)
                 .GroupBy(o => o.OrderDate.Value.Date)
@@ -56,7 +76,105 @@ namespace QuanLyCuaHangMyPham.Controllers
                 RevenueData = revenueData
             });
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("revenue/from-to2")]
+        public async Task<IActionResult> GetRevenueFromToDate2(string startDateStr, string endDateStr, string format = "json")
+        {
+            // Hỗ trợ nhiều định dạng ngày
+            string[] dateFormats = { "dd-MM-yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
 
+            // Phân tích chuỗi ngày bắt đầu
+            if (!DateTime.TryParseExact(startDateStr, dateFormats, CultureInfo.InvariantCulture,
+                                       DateTimeStyles.None, out DateTime startDate))
+            {
+                return BadRequest("Định dạng ngày bắt đầu không hợp lệ. Vui lòng sử dụng định dạng dd-MM-yyyy, dd/MM/yyyy hoặc yyyy-MM-dd");
+            }
+
+            // Phân tích chuỗi ngày kết thúc
+            if (!DateTime.TryParseExact(endDateStr, dateFormats, CultureInfo.InvariantCulture,
+                                       DateTimeStyles.None, out DateTime endDate))
+            {
+                return BadRequest("Định dạng ngày kết thúc không hợp lệ. Vui lòng sử dụng định dạng dd-MM-yyyy, dd/MM/yyyy hoặc yyyy-MM-dd");
+            }
+
+            // Lấy dữ liệu doanh thu theo ngày
+            var revenueData = await _context.Orders
+                .Where(o => o.OrderDate.HasValue && o.OrderDate.Value >= startDate && o.OrderDate.Value <= endDate)
+                .GroupBy(o => o.OrderDate.Value.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    TotalRevenue = g.Sum(o => o.TotalAmount ?? 0),
+                    TotalOrders = g.Count(),
+                    OrderIds = g.Select(o => o.Id).ToList()
+                })
+                .OrderBy(x => x.Date)
+                .ToListAsync();
+
+            // Thêm thông tin chi tiết về từng ngày
+            var enrichedRevenueData = new List<object>();
+            foreach (var dayRevenue in revenueData)
+            {
+                // Lấy thông tin chi tiết các đơn hàng trong ngày từ database
+                var orderDetails = await _context.Orders
+                    .Include(o => o.Customer)
+                        .ThenInclude(c => c.User)
+                    .Where(o => o.OrderDate.HasValue && o.OrderDate.Value.Date == dayRevenue.Date)
+                    .Select(o => new OrderSummaryDto
+                    {
+                        Id = o.Id,
+                        OrderDate = o.OrderDate,
+                        CustomerName = o.Customer.User.FirstName + " " + o.Customer.User.LastName,
+                        TotalAmount = o.TotalAmount,
+                        Status = o.Status,
+                        PaymentStatus = o.PaymentStatus,
+                        ShippingMethod = o.ShippingMethod,
+                        PhoneNumber = o.PhoneNumber,
+                        Email = o.Email
+                    })
+                    .ToListAsync();
+
+                enrichedRevenueData.Add(new
+                {
+                    Date = dayRevenue.Date,
+                    TotalRevenue = dayRevenue.TotalRevenue,
+                    TotalOrders = dayRevenue.TotalOrders,
+                    Orders = orderDetails
+                });
+            }
+
+            if (format.ToLower() == "pdf")
+            {
+                var pdfBytes = _exportService.ExportToPdf("Báo cáo doanh thu", enrichedRevenueData);
+                return File(pdfBytes, "application/pdf", "BaoCaoDoanhThu.pdf");
+            }
+            else if (format.ToLower() == "excel")
+            {
+                var excelBytes = _exportService.ExportToExcel("Báo cáo doanh thu", enrichedRevenueData);
+                return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BaoCaoDoanhThu.xlsx");
+            }
+
+            return Ok(new
+            {
+                StartDate = startDate,
+                EndDate = endDate,
+                RevenueData = enrichedRevenueData
+            });
+        }
+
+        // Thêm lớp DTO nếu chưa có
+        public class OrderSummaryDto
+        {
+            public int Id { get; set; }
+            public DateTime? OrderDate { get; set; }
+            public string CustomerName { get; set; }
+            public decimal? TotalAmount { get; set; }
+            public string Status { get; set; }
+            public string PaymentStatus { get; set; }
+            public string ShippingMethod { get; set; }
+            public string PhoneNumber { get; set; }
+            public string Email { get; set; }
+        }
 
         // 2. Thống kê doanh thu theo thương hiệu trong khoảng thời gian
         [HttpGet("revenue/brands/from-to")]

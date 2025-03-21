@@ -1415,6 +1415,22 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
+    "Method": "GetOrdersByDate",
+    "RelativePath": "api/Orders/by-date",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "date",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
     "Method": "CreateOrder",
     "RelativePath": "api/Orders/create",
     "HttpMethod": "POST",
@@ -1461,6 +1477,22 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
+    "Method": "GetOrderDetailsById",
+    "RelativePath": "api/Orders/order-details/{orderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
     "Method": "GetOrderDetailsWithImagesByOrderId",
     "RelativePath": "api/Orders/orders/{orderId}/details",
     "HttpMethod": "GET",
@@ -1471,6 +1503,37 @@
         "Name": "orderId",
         "Type": "System.Int32",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.OrdersController",
+    "Method": "SearchOrders",
+    "RelativePath": "api/Orders/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "searchTerm",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -2504,13 +2567,39 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "startDate",
-        "Type": "System.DateTime",
+        "Name": "startDateStr",
+        "Type": "System.String",
         "IsRequired": false
       },
       {
-        "Name": "endDate",
-        "Type": "System.DateTime",
+        "Name": "endDateStr",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "format",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.ReportController",
+    "Method": "GetRevenueFromToDate2",
+    "RelativePath": "api/reports/revenue/from-to2",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "startDateStr",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDateStr",
+        "Type": "System.String",
         "IsRequired": false
       },
       {
