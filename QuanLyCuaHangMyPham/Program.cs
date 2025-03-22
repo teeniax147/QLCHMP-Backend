@@ -16,10 +16,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using QuanLyCuaHangMyPham.Services.VNPAY;
-using QuanLyCuaHangMyPham.Services.MOMO.Services;
-using QuanLyCuaHangMyPham.Services.MOMO.Models.Momo;
 using Newtonsoft.Json;
+using QuanLyCuaHangMyPham.Services.Email;
+using QuanLyCuaHangMyPham.Services.Export;
+using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Services;
+using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Models.Momo;
+using QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY;
+using QuanLyCuaHangMyPham.Utilities;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -97,8 +100,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
 
     });
-
-builder.Services.AddTransient<ExportService>();
+builder.Services.AddTransient<IExportService, ExportService>();
 
 // Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

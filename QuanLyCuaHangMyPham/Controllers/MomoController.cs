@@ -1,10 +1,10 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 using QuanLyCuaHangMyPham;
-using QuanLyCuaHangMyPham.Services.MOMO.Models;
-using QuanLyCuaHangMyPham.Services.MOMO.Models.Momo;
-using QuanLyCuaHangMyPham.Services.MOMO.Models.Order;
-using QuanLyCuaHangMyPham.Services.MOMO.Services;
+using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Models;
+using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Models.Momo;
+using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Models.Order;
+using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Services;
 using System.Threading.Tasks;
 
 namespace QuanLyCuaHangMyPham.Controllers

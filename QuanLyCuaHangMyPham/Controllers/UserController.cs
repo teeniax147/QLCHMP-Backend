@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
-using QuanLyCuaHangMyPham.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,6 +18,7 @@ using QuanLyCuaHangMyPham.Models;
 using QuanLyCuaHangMyPham.IdentityModels;
 using Microsoft.AspNetCore.Authorization;
 using static QuanLyCuaHangMyPham.Controllers.UsersController;
+using QuanLyCuaHangMyPham.Services.Email;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {

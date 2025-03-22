@@ -147,6 +147,8 @@ namespace QuanLyCuaHangMyPham.Controllers
                     o.ShippingAddress,
                     o.EstimatedDeliveryDate,
                     CustomerName = $"{customer.User.FirstName} {customer.User.LastName}",
+                    PaymentMethodName = o.PaymentMethod?.Name,
+                    ShippingCompanyName = o.ShippingCompany?.Name,
                     OrderDetails = o.OrderDetails.Select(od => new
                     {
                         od.ProductId,

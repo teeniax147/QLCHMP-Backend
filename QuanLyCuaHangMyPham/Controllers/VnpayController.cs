@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using QuanLyCuaHangMyPham.Services.VNPAY;
-using QuanLyCuaHangMyPham.Services.VNPAY.Enums;
-using QuanLyCuaHangMyPham.Services.VNPAY.Models;
-using QuanLyCuaHangMyPham.Services.VNPAY.Utilities;
+using QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY;
+using QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY.Enums;
+using QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY.Models;
+using QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY.Utilities;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
