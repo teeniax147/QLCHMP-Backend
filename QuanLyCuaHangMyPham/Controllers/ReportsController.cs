@@ -14,9 +14,9 @@ namespace QuanLyCuaHangMyPham.Controllers
     public class ReportController : ControllerBase
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
-        private readonly ExportService _exportService;
+        private readonly IExportService _exportService; // Thay đ
 
-        public ReportController(QuanLyCuaHangMyPhamContext context, ExportService exportService)
+        public ReportController(QuanLyCuaHangMyPhamContext context, IExportService exportService) // Thay đổi ở đây
         {
             _context = context;
             _exportService = exportService;

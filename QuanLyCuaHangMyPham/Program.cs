@@ -33,9 +33,29 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policyBuilder =>
         {
-            policyBuilder.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader();
+            policyBuilder
+                .WithOrigins(
+                    "https://glamour.io.vn",
+                    "https://api.glamour.io.vn",
+                    "https://www.glamour.io.vn",
+                    "https://www.api.glamour.io.vn",
+                    "http://localhost:5173",
+                    "https://localhost:5173",
+                    "http://localhost:5001",
+                    "https://localhost:5001",
+                    "https://cutexiu.teeniax.io.vn",
+                    "https://api.cutexiu.teeniax.io.vn",
+                    "https://www.cutexiu.teeniax.io.vn",
+                    "https://www.api.cutexiu.teeniax.io.vn",
+                    "https://bubbles.teeniax.io.vn",
+                    "https://api.bubbles.teeniax.io.vn",
+                    "https://www.bubbles.teeniax.io.vn",
+                    "https://www.api.bubbles.teeniax.io.vn"
+                )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+
         });
 });
 
@@ -151,9 +171,14 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache(); // Lưu trữ trong bộ nhớ
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Thời gian hết hạn của session
+    options.Cookie.Name = ".Glamour.Session";
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+
+    // Đảm bảo cookie có thể được chia sẻ giữa các domain khác nhau
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 // Trong phương thức ConfigureServices của Startup.cs hoặc Program.cs
 builder.Services.AddHttpClient();

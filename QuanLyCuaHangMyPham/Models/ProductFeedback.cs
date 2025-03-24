@@ -14,6 +14,8 @@ public partial class ProductFeedback
     public int? Rating { get; set; }
 
     public string? ReviewText { get; set; }
+    // Thêm vào model ProductFeedback
+    public bool IsEdited { get; set; } = false;
 
     public DateTime? FeedbackDate { get; set; }
 

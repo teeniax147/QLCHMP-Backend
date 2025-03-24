@@ -49,18 +49,35 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             var ordersQuery = _context.Orders
                 .Include(o => o.Customer)
-                .ThenInclude(c => c.User)
+                    .ThenInclude(c => c.User)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
+                    .ThenInclude(od => od.Product)
                 .Include(o => o.Coupon)
                 .Include(o => o.ShippingCompany)
                 .Include(o => o.PaymentMethod)
                 .OrderByDescending(o => o.OrderDate);
 
             var totalOrders = await ordersQuery.CountAsync();
+
             var orders = await ordersQuery
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .Select(o => new OrderSummaryDto
+                {
+                    OrderId = o.Id,
+                    CustomerId = o.CustomerId,
+                    CustomerName = $"{o.Customer.User.FirstName} {o.Customer.User.LastName}",
+                    TotalAmount = o.TotalAmount ?? 0m,
+                    OriginalTotalAmount = o.OriginalTotalAmount ?? 0m,
+                    OrderDate = o.OrderDate.Value,
+                    Status = o.Status,
+                    ShippingAddress = o.ShippingAddress,
+                    ShippingMethod = o.ShippingMethod,
+                    PaymentStatus = o.PaymentStatus,
+                    PhoneNumber = o.PhoneNumber,
+                    Email = o.Email,
+
+                })
                 .ToListAsync();
 
             return Ok(new
@@ -68,26 +85,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 TotalOrders = totalOrders,
                 CurrentPage = pageNumber,
                 PageSize = pageSize,
-                Orders = orders.Select(o => new
-                {
-                    o.Id,
-                    o.OrderDate,
-                    o.Status,
-                    o.TotalAmount,
-                    o.DiscountApplied,
-                    o.ShippingCost,
-                    o.ShippingAddress,
-                    o.EstimatedDeliveryDate,
-                    CustomerName = $"{o.Customer.User.FirstName} {o.Customer.User.LastName}",
-                    OrderDetails = o.OrderDetails.Select(od => new
-                    {
-                        od.ProductId,
-                        od.Product.Name,
-                        od.Quantity,
-                        od.UnitPrice,
-                        od.TotalPrice
-                    })
-                })
+                Orders = orders
             });
         }
         //Lấy danh sách đơn hàng của một khách hàng cụ thể
@@ -164,6 +162,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return StatusCode(500, new { message = "Lỗi khi lấy danh sách đơn hàng.", error = ex.Message });
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("filter-by-status")]
         public async Task<IActionResult> FilterOrdersByStatus(string status)
         {
@@ -427,7 +426,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 }
             });
 
-            return Ok(new { Message = "Đơn hàng đã được tạo."});
+            return Ok(new { Message = "Đơn hàng đã được tạo." });
         }
 
         [HttpPost("create-guest")]
@@ -453,7 +452,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                     // Kiểm tra thông tin bắt buộc từ preview
                     var shippingAddress = (string)previewData.ShippingAddress;
                     var phoneNumber = (string)previewData.PhoneNumber;
-
+                    var email = (string)previewData.Email;
                     if (string.IsNullOrWhiteSpace(shippingAddress))
                     {
                         return BadRequest(new { Message = "Địa chỉ giao hàng không được để trống." });
@@ -528,6 +527,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                         ShippingCompanyId = (int?)previewData.ShippingCompanyId,
                         ShippingAddress = shippingAddress,
                         PhoneNumber = phoneNumber,
+                        Email = email,
                         OriginalTotalAmount = (decimal)previewData.OriginalTotalAmount,
                         TotalAmount = (decimal)previewData.TotalAmount,
                         ShippingCost = (decimal)previewData.ShippingCost,
@@ -666,14 +666,15 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok("Đơn hàng đã được hủy bởi bên bán.");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("search")]
         public async Task<IActionResult> SearchOrders(
     string? searchTerm,
-    int page = 1,
+    int pageNumber = 1,
     int pageSize = 10,
     string? status = null)
         {
-            if (page < 1) page = 1;
+            if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1 || pageSize > 50) pageSize = 10;
 
             // Bắt đầu với truy vấn IQueryable
@@ -682,17 +683,25 @@ namespace QuanLyCuaHangMyPham.Controllers
                     .ThenInclude(c => c.User)
                 .AsQueryable();
 
-            // Áp dụng tìm kiếm nếu có searchTerm
+            // Kiểm tra nếu searchTerm là số (ID đơn hàng)
+            int orderId = 0;
+            bool isOrderId = false;
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
+                isOrderId = int.TryParse(searchTerm, out orderId);
                 searchTerm = searchTerm.Trim().ToLower();
+
+                // Áp dụng tìm kiếm
                 query = query.Where(o =>
-                    // Tìm theo tên khách hàng (kết hợp FirstName và LastName)
-                    (o.Customer.User.FirstName + " " + o.Customer.User.LastName).ToLower().Contains(searchTerm) ||
+                    // Tìm theo tên khách hàng
+                    ((o.Customer.User.FirstName ?? "") + " " + (o.Customer.User.LastName ?? "")).ToLower().Contains(searchTerm) ||
                     // Tìm theo PhoneNumber
                     (o.PhoneNumber != null && o.PhoneNumber.ToLower().Contains(searchTerm)) ||
-                    // Tìm theo Email
-                    (o.Email != null && o.Email.ToLower().Contains(searchTerm))
+                    // Tìm theo Email - thêm kiểm tra debug
+                    (o.Email != null && o.Email.ToLower().Contains(searchTerm)) ||
+                    // Hoặc tìm theo ID đơn hàng
+                    (isOrderId && o.Id == orderId)
                 );
             }
 
@@ -703,36 +712,41 @@ namespace QuanLyCuaHangMyPham.Controllers
             }
 
             // Đếm tổng số kết quả để tính phân trang
-            var totalItems = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            var totalOrders = await query.CountAsync();
 
-            // Lấy dữ liệu theo trang
-            var orders = await query
-                .OrderByDescending(o => o.OrderDate) // Sắp xếp mới nhất trước
-                .Skip((page - 1) * pageSize)
+            // Lấy danh sách đơn hàng - TÁCH BIỆT từ việc truy vấn để tránh reference loop
+            var orderEntities = await query
+                .OrderByDescending(o => o.OrderDate)
+                .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(o => new OrderViewModel
-                {
-                    Id = o.Id,
-                    OrderDate = o.OrderDate,
-                    Status = o.Status,
-                    PaymentStatus = o.PaymentStatus,
-                    TotalAmount = o.TotalAmount,
-                    CustomerName = o.Customer.User.FirstName + " " + o.Customer.User.LastName,
-                    PhoneNumber = o.PhoneNumber,
-                    Email = o.Email,
-                    ShippingAddress = o.ShippingAddress
-                })
                 .ToListAsync();
 
-            // Trả về kết quả kèm thông tin phân trang
+            // Map thủ công sang DTO để tránh reference loop
+            var orders = orderEntities.Select(o => new OrderSummaryDto
+            {
+                OrderId = o.Id,
+                CustomerId = o.CustomerId,
+                CustomerName = o.Customer != null ?
+                    $"{o.Customer.User?.FirstName ?? ""} {o.Customer.User?.LastName ?? ""}".Trim() :
+                    "",
+                TotalAmount = o.TotalAmount ?? 0m,
+                OriginalTotalAmount = o.OriginalTotalAmount ?? 0m,
+                OrderDate = o.OrderDate ?? DateTime.Now,
+                Status = o.Status,
+                ShippingAddress = o.ShippingAddress,
+                ShippingMethod = o.ShippingMethod,
+                PaymentStatus = o.PaymentStatus,
+                PhoneNumber = o.PhoneNumber,
+                Email = o.Email // Đảm bảo trường Email được đưa vào kết quả
+            }).ToList();
+
+            // Trả về một anonymous object MỚI thay vì sử dụng lại cấu trúc từ EF Core
             return Ok(new
             {
-                TotalItems = totalItems,
-                TotalPages = totalPages,
-                CurrentPage = page,
+                TotalOrders = totalOrders,
+                CurrentPage = pageNumber,
                 PageSize = pageSize,
-                Orders = orders
+                Orders = orders // Trả về mảng Orders trực tiếp
             });
         }
 

@@ -1521,7 +1521,7 @@
         "IsRequired": false
       },
       {
-        "Name": "page",
+        "Name": "pageNumber",
         "Type": "System.Int32",
         "IsRequired": false
       },
@@ -1661,6 +1661,37 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.ProductFeedbacksController",
+    "Method": "GetAllFeedbacks",
+    "RelativePath": "api/ProductFeedbacks/all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.ProductFeedbacksController",
+    "Method": "GetCustomerFeedbacks",
+    "RelativePath": "api/ProductFeedbacks/customer",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.ProductFeedbacksController",
     "Method": "DeleteProductFeedback",
     "RelativePath": "api/ProductFeedbacks/delete/{feedbackId}",
     "HttpMethod": "DELETE",
@@ -1670,6 +1701,27 @@
       {
         "Name": "feedbackId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.ProductFeedbacksController",
+    "Method": "EditProductFeedback",
+    "RelativePath": "api/ProductFeedbacks/edit/{feedbackId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "feedbackId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "QuanLyCuaHangMyPham.Controllers.ProductFeedbacksController\u002BEditProductFeedbackRequest",
         "IsRequired": true
       }
     ],
@@ -3392,7 +3444,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "QuanLyCuaHangMyPham.Services.VNPAY.Models.PaymentResult",
+        "Type": "QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY.Models.PaymentResult",
         "MediaTypes": [
           "text/plain",
           "application/json",

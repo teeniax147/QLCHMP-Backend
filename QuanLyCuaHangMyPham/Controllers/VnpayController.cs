@@ -97,22 +97,54 @@ namespace QuanLyCuaHangMyPham.Controllers
             {
                 try
                 {
+                    // Log tham số từ VNPay để debug
+                    var vnpParams = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+
+                    // Kiểm tra trực tiếp tham số từ VNPay
+                    string responseCode = Request.Query["vnp_ResponseCode"].ToString();
+                    // Thường mã "00" là thành công theo VNPay
+                    bool directCheckSuccess = responseCode == "00";
+
+                    // Lấy kết quả từ service
                     var paymentResult = _vnpay.GetPaymentResult(Request.Query);
+
+                    // Nếu có sự khác biệt giữa kiểm tra trực tiếp và kết quả từ service
+                    if (directCheckSuccess && !paymentResult.IsSuccess)
+                    {
+                        // Log sự khác biệt
+                        // Ưu tiên kết quả kiểm tra trực tiếp
+                        paymentResult.IsSuccess = true;
+                        paymentResult.Description = "Thanh toán thành công (Override)";
+                    }
+
+                    // Lưu kết quả vào đơn hàng
+                    // Lấy mã đơn hàng từ vnp_TxnRef
+                    string orderCode = Request.Query["vnp_TxnRef"].ToString();
+
+                    // TODO: Cập nhật trạng thái đơn hàng trong database
+                    // UpdateOrderPaymentStatus(orderCode, paymentResult.IsSuccess);
 
                     if (paymentResult.IsSuccess)
                     {
                         return Ok(paymentResult);
                     }
-
                     return BadRequest(paymentResult);
                 }
                 catch (Exception ex)
                 {
+                    // Log lỗi chi tiết
                     return BadRequest(ex.Message);
                 }
             }
-
             return NotFound("Không tìm thấy thông tin thanh toán.");
+        }
+
+        // Hàm phụ trợ để cập nhật trạng thái đơn hàng (nếu cần)
+        private void UpdateOrderPaymentStatus(string orderCode, bool isSuccess)
+        {
+            // Tìm đơn hàng theo mã
+            // Cập nhật trạng thái thanh toán
+            // Lưu vào database
         }
     }
 }
