@@ -160,8 +160,11 @@ builder.Services.AddScoped<IMomoService, MomoService>();
 
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+// Trong Program.cs
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Handlers.Favorites.FavoriteHandlerChain>();
 // Đăng ký IMomoService với lớp triển khai MomoService
+// Thêm vào phương thức ConfigureServices trong Program.cs
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Services.Categories.CategoryCompositeService>();
 builder.Services.AddEndpointsApiExplorer();  // Thêm dịch vụ để khám phá các API
 
 // Đăng ký MemoryCache

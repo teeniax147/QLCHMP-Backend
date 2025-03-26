@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangMyPham.Data;
+using QuanLyCuaHangMyPham.Handlers.Favorites;
 using QuanLyCuaHangMyPham.Models;
 
 namespace QuanLyCuaHangMyPham.Controllers
@@ -18,47 +19,66 @@ namespace QuanLyCuaHangMyPham.Controllers
     public class FavoritesController : ControllerBase
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
+        private readonly FavoriteHandlerChain _favoriteHandlerChain;
 
-        public FavoritesController(QuanLyCuaHangMyPhamContext context)
+        public FavoritesController(QuanLyCuaHangMyPhamContext context, FavoriteHandlerChain favoriteHandlerChain)
+
         {
+
             _context = context;
+
+            _favoriteHandlerChain = favoriteHandlerChain;
+
         }
 
         // Lấy danh sách sản phẩm yêu thích của người dùng
+
         [Authorize]
+
         [HttpGet("user-favorites")]
+
         public async Task<IActionResult> GetUserFavorites()
+
         {
+
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var favorites = await _context.Favorites
-                .Where(f => f.UserId == userId)
-                .Include(f => f.Product)
-                 .ThenInclude(p => p.Brand)
-                .Select(f => new
-                {
-                    f.Product.Id,
-                    f.Product.Name,
-                    f.Product.Price,
-                    f.Product.OriginalPrice,
-                    f.Product.Description,
-                    f.Product.ImageUrl,
-                    f.Product.FavoriteCount,
-                    f.Product.ReviewCount,
-                    f.Product.AverageRating,
-                    f.Product.CreatedAt,
-                    BrandName = f.Product.Brand.Name,
-                    ShockPrice = f.Product.ShockPrice, // Giá khuyến mãi (nếu có)
-                    Stock = f.Product.GetCurrentStock(), // Số lượng tồn kho
-                })
-                .ToListAsync();
 
-            if (!favorites.Any())
+
+            // Tạo request data
+
+            var requestData = new FavoriteRequestData
+
             {
-                return NotFound("Không có sản phẩm yêu thích nào.");
+
+                UserId = userId
+
+            };
+
+
+
+            // Khởi tạo và thực thi chuỗi handler
+
+            var handlerChain = new FavoriteHandlerChain(_context);
+
+            var result = await handlerChain.ProcessGetUserFavorites(requestData);
+
+
+
+            if (!result.Success)
+
+            {
+
+                return NotFound(result.Message);
+
             }
 
-            return Ok(favorites);
+
+
+            // Trả về danh sách yêu thích
+
+            return Ok(result.Data);
+
         }
 
         // Thêm sản phẩm vào danh sách yêu thích
@@ -68,47 +88,72 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // Kiểm tra sản phẩm đã có trong danh sách yêu thích chưa
-            var existingFavorite = await _context.Favorites
-                .FirstOrDefaultAsync(f => f.UserId == userId && f.ProductId == request.ProductId);
-
-            if (existingFavorite != null)
-            {
-                return BadRequest("Sản phẩm đã có trong danh sách yêu thích.");
-            }
-
-            var favorite = new Favorite
+            // Tạo request data
+            var requestData = new FavoriteRequestData
             {
                 UserId = userId,
-                ProductId = request.ProductId,
-                AddedAt = DateTime.Now
+                ProductId = request.ProductId
             };
 
-            _context.Favorites.Add(favorite);
-            await _context.SaveChangesAsync();
+            // Khởi tạo và thực thi chuỗi handler
+            var handlerChain = new FavoriteHandlerChain(_context);
+            var result = await handlerChain.ProcessAddToFavorite(requestData);
 
-            return Ok("Đã thêm sản phẩm vào danh sách yêu thích.");
-        }
-
-        // Xóa sản phẩm khỏi danh sách yêu thích
-        [HttpDelete("remove")]
-        [Authorize(Roles = "Customer")]
-        public async Task<IActionResult> RemoveFromFavorites([FromBody] RemoveFavoriteRequest request)
-        {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            var favorite = await _context.Favorites
-                .FirstOrDefaultAsync(f => f.UserId == userId && f.ProductId == request.ProductId);
-
-            if (favorite == null)
+            if (!result.Success)
             {
-                return NotFound("Không tìm thấy sản phẩm trong danh sách yêu thích.");
+                return BadRequest(result.Message);
             }
 
-            _context.Favorites.Remove(favorite);
-            await _context.SaveChangesAsync();
+            return Ok(result.Message);
+        }
+        // Xóa sản phẩm khỏi danh sách yêu thích
 
-            return Ok("Đã xóa sản phẩm khỏi danh sách yêu thích.");
+        [HttpDelete("remove")]
+
+        [Authorize(Roles = "Customer")]
+
+        public async Task<IActionResult> RemoveFromFavorites([FromBody] RemoveFavoriteRequest request)
+
+        {
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+
+
+            // Tạo request data
+
+            var requestData = new FavoriteRequestData
+
+            {
+
+                UserId = userId,
+
+                ProductId = request.ProductId
+
+            };
+
+
+
+            // Khởi tạo và thực thi chuỗi handler
+
+            var handlerChain = new FavoriteHandlerChain(_context);
+
+            var result = await handlerChain.ProcessRemoveFromFavorites(requestData);
+
+
+
+            if (!result.Success)
+
+            {
+
+                return NotFound(result.Message);
+
+            }
+
+
+
+            return Ok(result.Message);
+
         }
 
         private bool FavoriteExists(int id)
