@@ -19,6 +19,7 @@ using QuanLyCuaHangMyPham.IdentityModels;
 using Microsoft.AspNetCore.Authorization;
 using static QuanLyCuaHangMyPham.Controllers.UsersController;
 using QuanLyCuaHangMyPham.Services.Email;
+using QuanLyCuaHangMyPham.Services.Email.Strategies;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -76,15 +77,30 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return Conflict("Tên đăng nhập đã tồn tại.");
             }
 
-            // Generate OTP and send email
+            // Generate OTP and save to cache
             var otp = _emailService.GenerateOTP();
             _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5));
             _cache.Set(request.Email + "_data", request, TimeSpan.FromMinutes(5));
 
-            // Send OTP email
-            var subject = "Xác thực đăng ký tài khoản của bạn";
-            var message = $"Vui lòng sử dụng mã OTP sau để đăng ký tài khoản của bạn: {otp}.\nLưu ý: Mã OTP chỉ có hiệu lực trong vòng 5 phút.";
-            await _emailService.SendEmailAsync(request.Email, subject, message);
+            // Tạo dữ liệu cho template
+            var templateData = new Dictionary<string, object>
+    {
+        { "otp", otp },
+        { "purpose", "đăng ký tài khoản" },
+        { "expireTime", "5 phút" }
+    };
+
+            // Sử dụng OtpEmailStrategy để gửi email OTP
+            var otpStrategy = new OtpEmailStrategy(templateData);
+
+            await _emailService.SendEmailWithStrategyAsync(
+                request.Email,
+                "Xác thực đăng ký tài khoản của bạn",
+                "Vui lòng sử dụng mã OTP này để hoàn tất đăng ký tài khoản tại Cửa Hàng Mỹ Phẩm.",
+                otpStrategy
+            );
+
+            _logger.LogInformation($"Registration OTP sent to {request.Email}");
 
             return Ok("Vui lòng kiểm tra email của bạn để xác thực đăng ký.");
         }
@@ -125,12 +141,28 @@ namespace QuanLyCuaHangMyPham.Controllers
             var otp = _emailService.GenerateOTP();
             _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5));
 
-            var subject = request.OtpPurpose == "register"
-                    ? "Xác thực đăng ký tài khoản của bạn"
-                    : "Mã OTP để khôi phục mật khẩu";
-            var message = $"Vui lòng sử dụng mã OTP sau để {(request.OtpPurpose == "register" ? "đăng ký tài khoản của bạn" : "khôi phục mật khẩu của bạn")}: {otp}.\nMã OTP có hiệu lực trong 5 phút.";
+            // Tạo dữ liệu cho template
+            var purposeText = request.OtpPurpose == "register" ? "đăng ký tài khoản" : "khôi phục mật khẩu";
+            var templateData = new Dictionary<string, object>
+    {
+        { "otp", otp },
+        { "purpose", purposeText },
+        { "expireTime", "5 phút" }
+    };
 
-            await _emailService.SendEmailAsync(request.Email, subject, message);
+            // Sử dụng OtpEmailStrategy để gửi email OTP
+            var otpStrategy = new OtpEmailStrategy(templateData);
+
+            var subject = request.OtpPurpose == "register"
+                        ? "Xác thực đăng ký tài khoản của bạn"
+                        : "Mã OTP để khôi phục mật khẩu";
+
+            await _emailService.SendEmailWithStrategyAsync(
+                request.Email,
+                subject,
+                $"Vui lòng sử dụng mã OTP này để {purposeText} tại Cửa Hàng Mỹ Phẩm.",
+                otpStrategy
+            );
 
             _logger.LogInformation($"OTP resent successfully to {request.Email}.");
             return Ok("Mã OTP đã được gửi lại. Vui lòng kiểm tra email của bạn.");
@@ -211,6 +243,23 @@ namespace QuanLyCuaHangMyPham.Controllers
                             // Xóa thông tin đăng ký khỏi cache sau khi tạo tài khoản thành công
                             _cache.Remove(request.Email + "_data");
                             _logger.LogInformation($"User registered successfully for {request.Email}, removed cached data.");
+
+                            // Gửi email chào mừng sau khi đăng ký thành công
+                            var welcomeData = new Dictionary<string, object>
+                    {
+                        { "userName", $"{user.FirstName} {user.LastName}" },
+                        { "shopName", "Cửa Hàng Mỹ Phẩm" },
+                        { "registrationDate", DateTime.Now.ToString("dd/MM/yyyy") }
+                    };
+
+                            var welcomeStrategy = new WelcomeEmailStrategy(welcomeData);
+
+                            await _emailService.SendEmailWithStrategyAsync(
+                                user.Email,
+                                "Chào mừng bạn đến với Cửa Hàng Mỹ Phẩm",
+                                "Cảm ơn bạn đã đăng ký tài khoản tại cửa hàng của chúng tôi. Chúng tôi rất vui mừng được phục vụ bạn. Hãy khám phá các sản phẩm của chúng tôi và không ngần ngại liên hệ nếu bạn cần hỗ trợ.",
+                                welcomeStrategy
+                            );
 
                             return Ok("Xác thực thành công. Tài khoản của bạn đã được tạo và thông tin khách hàng đã được thêm.");
                         }
@@ -339,7 +388,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
         // Gửi OTP để khôi phục mật khẩu
         [HttpPost("forgot-password")]
-        public IActionResult ForgotPassword([FromBody] ForgotPasswordRequest request)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
             var user = _userManager.Users.FirstOrDefault(u => u.Email == request.Email);
             if (user == null)
@@ -350,9 +399,26 @@ namespace QuanLyCuaHangMyPham.Controllers
             var otp = _emailService.GenerateOTP();
             _cache.Set(request.Email + "_otp", otp, TimeSpan.FromMinutes(5));
 
-            var subject = "Mã OTP để khôi phục mật khẩu";
-            var message = $"Vui lòng sử dụng mã OTP sau để khôi phục mật khẩu của bạn: {otp}.\nMã OTP chỉ có hiệu lực trong 5 phút.";
-            _emailService.SendEmailAsync(request.Email, subject, message);
+            // Tạo dữ liệu cho template
+            var templateData = new Dictionary<string, object>
+    {
+        { "otp", otp },
+        { "purpose", "khôi phục mật khẩu" },
+        { "expireTime", "5 phút" },
+        { "userName", $"{user.FirstName} {user.LastName}" }
+    };
+
+            // Sử dụng OtpEmailStrategy để gửi email OTP
+            var otpStrategy = new OtpEmailStrategy(templateData);
+
+            await _emailService.SendEmailWithStrategyAsync(
+                request.Email,
+                "Mã OTP để khôi phục mật khẩu",
+                "Vui lòng sử dụng mã OTP này để khôi phục mật khẩu tài khoản của bạn tại Cửa Hàng Mỹ Phẩm.",
+                otpStrategy
+            );
+
+            _logger.LogInformation($"Password reset OTP sent to {request.Email}");
 
             return Ok("Vui lòng kiểm tra email của bạn để nhập mã OTP.");
         }
@@ -384,6 +450,27 @@ namespace QuanLyCuaHangMyPham.Controllers
             {
                 // Xóa trạng thái OTP xác nhận sau khi đặt lại mật khẩu thành công
                 _cache.Remove(request.Email + "_otp_verified");
+
+                // Tạo dữ liệu cho email thông báo
+                var resetData = new Dictionary<string, object>
+        {
+            { "userName", $"{user.FirstName} {user.LastName}" },
+            { "resetTime", DateTime.Now.ToString("HH:mm dd/MM/yyyy") },
+            { "ipAddress", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "không xác định" }
+        };
+
+                // Sử dụng PasswordResetConfirmationStrategy
+                var resetConfirmationStrategy = new PasswordResetConfirmationStrategy(resetData);
+
+                await _emailService.SendEmailWithStrategyAsync(
+                    request.Email,
+                    "Thông báo đặt lại mật khẩu thành công",
+                    "Mật khẩu của bạn đã được đặt lại thành công. Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ với chúng tôi ngay lập tức.",
+                    resetConfirmationStrategy
+                );
+
+                _logger.LogInformation($"Password reset successful for {request.Email}");
+
                 return Ok("Mật khẩu của bạn đã được cập nhật thành công.");
             }
             else
@@ -778,7 +865,37 @@ namespace QuanLyCuaHangMyPham.Controllers
             _logger.LogInformation($"Đã mở khóa tài khoản của {user.UserName} thành công.");
             return Ok(new { message = "Tài khoản đã được mở khóa thành công." });
         }
+        // Thêm vào lớp UsersController
+        private async Task SendOtpEmail(string email, string otp, string purpose)
+        {
+            // Tạo nội dung tùy thuộc vào mục đích
+            string content;
+            string subject;
 
+            switch (purpose)
+            {
+                case "register":
+                    subject = "Xác thực đăng ký tài khoản của bạn";
+                    content = "Vui lòng sử dụng mã OTP sau để đăng ký tài khoản của bạn.";
+                    break;
+                case "forgot-password":
+                    subject = "Mã OTP để khôi phục mật khẩu";
+                    content = "Vui lòng sử dụng mã OTP sau để khôi phục mật khẩu của bạn.";
+                    break;
+                default:
+                    subject = "Mã xác thực của bạn";
+                    content = "Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn.";
+                    break;
+            }
+
+            // Sử dụng OtpEmailStrategy
+            var strategy = new OtpEmailStrategy(otp, purpose);
+
+            // Gửi email với strategy
+            await _emailService.SendEmailWithStrategyAsync(email, subject, content, strategy);
+
+            _logger.LogInformation($"Sent OTP email to {email} for purpose: {purpose}");
+        }
         // Các lớp request khác
         public class RegisterRequest
         {

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿// 1. Component (Interface)
+using System.Collections.Generic;
+using QuanLyCuaHangMyPham.Models;
 
 namespace QuanLyCuaHangMyPham.Components.Categories
 {
@@ -7,7 +9,7 @@ namespace QuanLyCuaHangMyPham.Components.Categories
         int Id { get; }
         string Name { get; }
         int? ParentId { get; }
-
+        Category Category { get; }
         void Display(int depth = 0);
         int CountCategories();
         int CountProducts();

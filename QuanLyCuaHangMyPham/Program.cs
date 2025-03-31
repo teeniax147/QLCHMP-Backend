@@ -23,6 +23,17 @@ using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Services;
 using QuanLyCuaHangMyPham.Services.PAYMENT.MOMO.Models.Momo;
 using QuanLyCuaHangMyPham.Services.PAYMENT.VNPAY;
 using QuanLyCuaHangMyPham.Utilities;
+using QuanLyCuaHangMyPham.Facades;
+using QuanLyCuaHangMyPham.Services.ORDERS.Facades;
+using QuanLyCuaHangMyPham.Services.ORDERS;
+using QuanLyCuaHangMyPham.States;
+using QuanLyCuaHangMyPham.Repositories.Cart;
+using QuanLyCuaHangMyPham.Mediators;
+using QuanLyCuaHangMyPham.Mediators.Cart;
+using QuanLyCuaHangMyPham.Handlers.Cart;
+using QuanLyCuaHangMyPham.Services.Analytics;
+using QuanLyCuaHangMyPham.Services.Cart;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -159,10 +170,20 @@ builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("Mo
 builder.Services.AddScoped<IMomoService, MomoService>();
 
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddEmailServices();
 // Trong Program.cs
 builder.Services.AddScoped<QuanLyCuaHangMyPham.Handlers.Favorites.FavoriteHandlerChain>();
 // Đăng ký IMomoService với lớp triển khai MomoService
+// Trong Program.cs
+
+// Đăng ký OrderStateContext
+builder.Services.AddScoped<OrderStateContext>();
+
+// Đăng ký OrderService
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Đăng ký OrderFacade
+builder.Services.AddScoped<IOrderFacade, OrderFacade>();
 // Thêm vào phương thức ConfigureServices trong Program.cs
 builder.Services.AddScoped<QuanLyCuaHangMyPham.Services.Categories.CategoryCompositeService>();
 builder.Services.AddEndpointsApiExplorer();  // Thêm dịch vụ để khám phá các API
@@ -183,8 +204,30 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
+
 // Trong phương thức ConfigureServices của Startup.cs hoặc Program.cs
 builder.Services.AddHttpClient();
+
+// Đăng ký HttpContextAccessor (cần thiết cho Session)
+builder.Services.AddHttpContextAccessor();
+
+// Command Pattern và Mediator Pattern - Đăng ký các dịch vụ
+
+// Đăng ký CartRepository (Receiver trong Command Pattern)
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Repositories.Cart.CartRepository>();
+
+// Đăng ký CartMediator (Mediator trong Mediator Pattern)
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Mediators.IMediator, QuanLyCuaHangMyPham.Mediators.Cart.CartMediator>();
+// Đăng ký CartCommandHandler (Invoker trong Command Pattern)
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Handlers.Cart.CartCommandHandler>();
+
+// Đăng ký các Colleagues cho Mediator Pattern
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Services.Cart.CartNotificationService>();
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Services.Analytics.CartAnalyticsService>();
+
+// Đăng ký CartMediatorConfigurator để cấu hình kết nối Mediator-Colleague
+builder.Services.AddScoped<QuanLyCuaHangMyPham.Mediators.Cart.CartMediatorConfigurator>();
+
 // XÂY DỰNG ỨNG DỤNG - SAU DÒNG NÀY KHÔNG ĐƯỢC THÊM DỊCH VỤ
 var app = builder.Build();
 

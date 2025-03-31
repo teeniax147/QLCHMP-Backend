@@ -59,6 +59,11 @@ public partial class Product
                 : (decimal?)null;
         }
     }
+    // Thêm thuộc tính lưu trữ cho ShockPrice
+    public decimal? CurrentShockPrice { get; set; }
+
+    // Thêm thuộc tính để theo dõi khuyến mãi hiện tại
+    public int? CurrentPromotionId { get; set; }
     // Phương thức để lấy tổng số lượng tồn kho
     public int GetCurrentStock()
     {

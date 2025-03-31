@@ -1,4 +1,5 @@
-﻿using System;
+﻿// 4. Service làm việc với các thành phần
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,9 +53,25 @@ namespace QuanLyCuaHangMyPham.Services.Categories
 
             foreach (var childCategory in childCategories)
             {
-                var childComposite = new CategoryComposite(childCategory);
-                BuildCategoryTreeRecursive(childComposite, allCategories);
-                parentComposite.Add(childComposite);
+                // Kiểm tra xem danh mục con có danh mục con không
+                bool hasChildren = allCategories.Any(c => c.ParentId == childCategory.Id);
+
+                ICategoryComponent childComponent;
+
+                if (hasChildren)
+                {
+                    // Nếu có con, tạo Composite
+                    var childComposite = new CategoryComposite(childCategory);
+                    BuildCategoryTreeRecursive(childComposite, allCategories);
+                    childComponent = childComposite;
+                }
+                else
+                {
+                    // Nếu không có con, tạo Leaf
+                    childComponent = new CategoryLeaf(childCategory);
+                }
+
+                parentComposite.Add(childComponent);
             }
         }
 
@@ -253,9 +270,28 @@ namespace QuanLyCuaHangMyPham.Services.Categories
                 Children = new List<CategoryHierarchyDto>()
             };
 
-            foreach (var child in category.Children.OfType<CategoryComposite>())
+            foreach (var child in category.Children)
             {
-                dto.Children.Add(ConvertToHierarchyDto(child));
+                // Chỉ thêm children cho CategoryComposite
+                if (child is CategoryComposite composite)
+                {
+                    dto.Children.Add(ConvertToHierarchyDto(composite));
+                }
+                else if (child is CategoryLeaf leaf)
+                {
+                    // Thêm leaf như một mục không có children
+                    dto.Children.Add(new CategoryHierarchyDto
+                    {
+                        Id = leaf.Id,
+                        Name = leaf.Name,
+                        Description = leaf.Category.Description,
+                        CreatedAt = leaf.Category.CreatedAt,
+                        ParentId = leaf.ParentId,
+                        ProductCount = leaf.CountProducts(),
+                        ChildCount = 0,
+                        Children = new List<CategoryHierarchyDto>()
+                    });
+                }
             }
 
             return dto;

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sHT/40CXRIw=",
+  "dgSpecHash": "vOb6jzp59Z8=",
   "success": true,
-  "projectFilePath": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+  "projectFilePath": "D:\\source\\repos\\DesignPattern\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dangt\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\dangt\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QuanLyCuaHangMyPham.Data;
 using QuanLyCuaHangMyPham.Models;
+using QuanLyCuaHangMyPham.Services.PROMOTIONS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,14 @@ namespace QuanLyCuaHangMyPham.Controllers
     [ApiController]
     public class PromotionController : ControllerBase
     {
-        private readonly QuanLyCuaHangMyPhamContext _context;
+        private readonly IPromotionService _promotionService;
         private readonly ILogger<PromotionController> _logger;
 
-        public PromotionController(QuanLyCuaHangMyPhamContext context, ILogger<PromotionController> logger)
+        public PromotionController(
+            IPromotionService promotionService,
+            ILogger<PromotionController> logger)
         {
-            _context = context;
+            _promotionService = promotionService;
             _logger = logger;
         }
 
@@ -28,20 +31,36 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPromotions()
         {
-            var promotions = await _context.Promotions.Include(p => p.Product).ToListAsync();
-            return Ok(promotions);
+            try
+            {
+                var promotions = await _promotionService.GetPromotionsAsync();
+                return Ok(promotions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving promotions");
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách khuyến mãi." });
+            }
         }
 
         // GET: api/Promotion/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPromotion(int id)
         {
-            var promotion = await _context.Promotions.Include(p => p.Product).FirstOrDefaultAsync(p => p.Id == id);
-            if (promotion == null)
+            try
             {
-                return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                var promotion = await _promotionService.GetPromotionByIdAsync(id);
+                if (promotion == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                }
+                return Ok(promotion);
             }
-            return Ok(promotion);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving promotion with ID: {id}");
+                return StatusCode(500, new { message = "Lỗi khi lấy thông tin khuyến mãi." });
+            }
         }
 
         // POST: api/Promotion
@@ -54,32 +73,16 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest(ModelState);
             }
 
-            var promotion = new Promotion
+            try
             {
-                ProductId = request.ProductId,
-                Name = request.Name,
-                DiscountPercentage = request.DiscountPercentage,
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Promotions.Add(promotion);
-
-            // Cập nhật giá sản phẩm nếu khuyến mãi mới đang có hiệu lực
-            if (request.StartDate <= DateTime.Now && request.EndDate >= DateTime.Now)
-            {
-                var product = await _context.Products.FindAsync(request.ProductId);
-                if (product != null)
-                {
-                    product.Price = product.OriginalPrice * (1 - (request.DiscountPercentage ?? 0) / 100);
-                    _context.Products.Update(product);
-                }
+                var promotion = await _promotionService.CreatePromotionAsync(request);
+                return CreatedAtAction(nameof(GetPromotion), new { id = promotion.Id }, promotion);
             }
-
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetPromotion), new { id = promotion.Id }, promotion);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating promotion");
+                return StatusCode(500, new { message = "Lỗi khi tạo khuyến mãi." });
+            }
         }
 
         // PUT: api/Promotion/{id}
@@ -92,38 +95,20 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest(ModelState);
             }
 
-            var promotion = await _context.Promotions.FindAsync(id);
-            if (promotion == null)
+            try
             {
-                return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                var promotion = await _promotionService.UpdatePromotionAsync(id, request);
+                if (promotion == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                }
+                return Ok(promotion);
             }
-
-            promotion.ProductId = request.ProductId;
-            promotion.Name = request.Name;
-            promotion.DiscountPercentage = request.DiscountPercentage;
-            promotion.StartDate = request.StartDate;
-            promotion.EndDate = request.EndDate;
-
-            _context.Promotions.Update(promotion);
-
-            // Cập nhật giá sản phẩm nếu khuyến mãi được chỉnh sửa đang có hiệu lực
-            var product = await _context.Products.FindAsync(request.ProductId);
-            if (product != null)
+            catch (Exception ex)
             {
-                if (request.StartDate <= DateTime.Now && request.EndDate >= DateTime.Now)
-                {
-                    product.Price = product.OriginalPrice * (1 - (request.DiscountPercentage ?? 0) / 100);
-                }
-                else
-                {
-                    product.Price = product.OriginalPrice; // Hết hiệu lực khuyến mãi, quay lại giá gốc
-                }
-                _context.Products.Update(product);
+                _logger.LogError(ex, $"Error updating promotion with ID: {id}");
+                return StatusCode(500, new { message = "Lỗi khi cập nhật khuyến mãi." });
             }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(promotion);
         }
 
         // DELETE: api/Promotion/{id}
@@ -131,59 +116,68 @@ namespace QuanLyCuaHangMyPham.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePromotion(int id)
         {
-            var promotion = await _context.Promotions.FindAsync(id);
-            if (promotion == null)
+            try
             {
-                return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                var result = await _promotionService.DeletePromotionAsync(id);
+                if (!result)
+                {
+                    return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                }
+                return Ok(new { message = "Khuyến mãi đã được xóa thành công." });
             }
-
-            _context.Promotions.Remove(promotion);
-
-            // Cập nhật giá sản phẩm nếu khuyến mãi bị xóa
-            var product = await _context.Products.FindAsync(promotion.ProductId);
-            if (product != null)
+            catch (Exception ex)
             {
-                product.Price = product.OriginalPrice;
-                _context.Products.Update(product);
+                _logger.LogError(ex, $"Error deleting promotion with ID: {id}");
+                return StatusCode(500, new { message = "Lỗi khi xóa khuyến mãi." });
             }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Khuyến mãi đã được xóa thành công." });
         }
 
         // GET: api/Promotion/active
         [HttpGet("active")]
         public async Task<IActionResult> GetActivePromotions()
         {
-            var currentDate = DateTime.Now;
-            var activePromotions = await _context.Promotions
-                .Include(p => p.Product)
-                .Where(p => p.StartDate <= currentDate && p.EndDate >= currentDate)
-                .ToListAsync();
-            return Ok(activePromotions);
+            try
+            {
+                var activePromotions = await _promotionService.GetActivePromotionsAsync();
+                return Ok(activePromotions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving active promotions");
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách khuyến mãi đang hoạt động." });
+            }
         }
 
         // GET: api/Promotion/product/{productId}
         [HttpGet("product/{productId}")]
         public async Task<IActionResult> GetPromotionsByProduct(int productId)
         {
-            var promotions = await _context.Promotions
-                .Where(p => p.ProductId == productId)
-                .ToListAsync();
-            return Ok(promotions);
+            try
+            {
+                var promotions = await _promotionService.GetPromotionsByProductAsync(productId);
+                return Ok(promotions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving promotions for product ID: {productId}");
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách khuyến mãi theo sản phẩm." });
+            }
         }
 
         // GET: api/Promotion/upcoming
         [HttpGet("upcoming")]
         public async Task<IActionResult> GetUpcomingPromotions()
         {
-            var currentDate = DateTime.Now;
-            var upcomingPromotions = await _context.Promotions
-                .Include(p => p.Product)
-                .Where(p => p.StartDate > currentDate)
-                .ToListAsync();
-            return Ok(upcomingPromotions);
+            try
+            {
+                var upcomingPromotions = await _promotionService.GetUpcomingPromotionsAsync();
+                return Ok(upcomingPromotions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving upcoming promotions");
+                return StatusCode(500, new { message = "Lỗi khi lấy danh sách khuyến mãi sắp tới." });
+            }
         }
 
         // POST: api/Promotion/apply-to-all
@@ -196,57 +190,42 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest(ModelState);
             }
 
-            var products = await _context.Products.ToListAsync();
-            foreach (var product in products)
+            try
             {
-                var promotion = new Promotion
+                var result = await _promotionService.ApplyPromotionToAllProductsAsync(request);
+                if (result)
                 {
-                    ProductId = product.Id,
-                    Name = request.Name,
-                    DiscountPercentage = request.DiscountPercentage,
-                    StartDate = request.StartDate,
-                    EndDate = request.EndDate,
-                    CreatedAt = DateTime.Now
-                };
-                _context.Promotions.Add(promotion);
-
-                // Cập nhật giá sản phẩm nếu khuyến mãi mới đang có hiệu lực
-                if (request.StartDate <= DateTime.Now && request.EndDate >= DateTime.Now)
-                {
-                    product.Price = product.OriginalPrice * (1 - (request.DiscountPercentage ?? 0) / 100);
-                    _context.Products.Update(product);
+                    return Ok(new { message = "Khuyến mãi đã được áp dụng cho tất cả sản phẩm." });
                 }
+                return BadRequest(new { message = "Không thể áp dụng khuyến mãi cho tất cả sản phẩm." });
             }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Khuyến mãi đã được áp dụng cho tất cả sản phẩm." });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error applying promotion to all products");
+                return StatusCode(500, new { message = "Lỗi khi áp dụng khuyến mãi cho tất cả sản phẩm." });
+            }
         }
-        //API để tìm kiếm khuyến mãi theo tên hoặc thời gian
+
+        // GET: api/Promotion/search
         [HttpGet("search")]
-        public async Task<IActionResult> SearchPromotions([FromQuery] string keyword, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        public async Task<IActionResult> SearchPromotions(
+            [FromQuery] string keyword,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
         {
-            var query = _context.Promotions.Include(p => p.Product).AsQueryable();
-
-            if (!string.IsNullOrEmpty(keyword))
+            try
             {
-                query = query.Where(p => p.Name.Contains(keyword));
+                var promotions = await _promotionService.SearchPromotionsAsync(keyword, startDate, endDate);
+                return Ok(promotions);
             }
-
-            if (startDate.HasValue)
+            catch (Exception ex)
             {
-                query = query.Where(p => p.StartDate >= startDate.Value);
+                _logger.LogError(ex, "Error searching promotions");
+                return StatusCode(500, new { message = "Lỗi khi tìm kiếm khuyến mãi." });
             }
-
-            if (endDate.HasValue)
-            {
-                query = query.Where(p => p.EndDate <= endDate.Value);
-            }
-
-            var promotions = await query.ToListAsync();
-            return Ok(promotions);
         }
-        //API để áp dụng một khuyến mãi cho danh mục sản phẩm cụ thể
+
+        // POST: api/Promotion/apply-to-category
         [Authorize(Roles = "Admin")]
         [HttpPost("apply-to-category")]
         public async Task<IActionResult> ApplyPromotionToCategory([FromBody] ApplyPromotionToCategoryRequest request)
@@ -256,104 +235,66 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest(ModelState);
             }
 
-            var productsInCategory = await _context.Products
-                .Where(p => p.Categories.Any(c => c.Id == request.CategoryId))
-                .ToListAsync();
-
-            foreach (var product in productsInCategory)
+            try
             {
-                var promotion = new Promotion
+                var result = await _promotionService.ApplyPromotionToCategoryAsync(request);
+                if (result)
                 {
-                    ProductId = product.Id,
-                    Name = request.Name,
-                    DiscountPercentage = request.DiscountPercentage,
-                    StartDate = request.StartDate,
-                    EndDate = request.EndDate,
-                    CreatedAt = DateTime.Now
-                };
-                _context.Promotions.Add(promotion);
-
-                // Cập nhật giá sản phẩm nếu khuyến mãi mới đang có hiệu lực
-                if (request.StartDate <= DateTime.Now && request.EndDate >= DateTime.Now)
-                {
-                    product.Price = product.OriginalPrice * (1 - (request.DiscountPercentage ?? 0) / 100);
-                    _context.Products.Update(product);
+                    return Ok(new { message = "Khuyến mãi đã được áp dụng cho các sản phẩm trong danh mục." });
                 }
+                return BadRequest(new { message = "Không thể áp dụng khuyến mãi cho danh mục. Có thể danh mục không có sản phẩm." });
             }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Khuyến mãi đã được áp dụng cho các sản phẩm trong danh mục." });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error applying promotion to category ID: {request.CategoryId}");
+                return StatusCode(500, new { message = "Lỗi khi áp dụng khuyến mãi cho danh mục." });
+            }
         }
 
-        //API để hủy tất cả các khuyến mãi hiện tại
+        // DELETE: api/Promotion/cancel-all-active
         [Authorize(Roles = "Admin")]
         [HttpDelete("cancel-all-active")]
         public async Task<IActionResult> CancelAllActivePromotions()
         {
-            var currentDate = DateTime.Now;
-            var activePromotions = await _context.Promotions
-                .Where(p => p.StartDate <= currentDate && p.EndDate >= currentDate)
-                .ToListAsync();
-
-            foreach (var promotion in activePromotions)
+            try
             {
-                var product = await _context.Products.FindAsync(promotion.ProductId);
-                if (product != null)
+                var result = await _promotionService.CancelAllActivePromotionsAsync();
+                if (result)
                 {
-                    product.Price = product.OriginalPrice;
-                    _context.Products.Update(product);
+                    return Ok(new { message = "Tất cả các khuyến mãi đang hoạt động đã bị hủy." });
                 }
-
-                _context.Promotions.Remove(promotion);
+                return BadRequest(new { message = "Lỗi khi hủy các khuyến mãi đang hoạt động." });
             }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Tất cả các khuyến mãi đang hoạt động đã bị hủy." });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling all active promotions");
+                return StatusCode(500, new { message = "Lỗi khi hủy tất cả các khuyến mãi đang hoạt động." });
+            }
         }
 
-        //API để thống kê hiệu quả của khuyến mãi
+        // GET: api/Promotion/statistics/{promotionId}
         [Authorize(Roles = "Admin")]
         [HttpGet("statistics/{promotionId}")]
         public async Task<IActionResult> GetPromotionStatistics(int promotionId)
         {
-            var promotion = await _context.Promotions.Include(p => p.Product).FirstOrDefaultAsync(p => p.Id == promotionId);
-            if (promotion == null)
+            try
             {
-                return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                var statistics = await _promotionService.GetPromotionStatisticsAsync(promotionId);
+                if (statistics == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy khuyến mãi." });
+                }
+                return Ok(statistics);
             }
-
-            var ordersWithPromotion = await _context.Orders
-                .Where(o => o.CouponId == promotionId)
-                .ToListAsync();
-
-            var totalOrders = ordersWithPromotion.Count;
-            var totalRevenue = ordersWithPromotion.Sum(o => o.TotalAmount);
-
-            return Ok(new
+            catch (Exception ex)
             {
-                PromotionName = promotion.Name,
-                TotalOrders = totalOrders,
-                TotalRevenue = totalRevenue
-            });
+                _logger.LogError(ex, $"Error getting statistics for promotion ID: {promotionId}");
+                return StatusCode(500, new { message = "Lỗi khi lấy thống kê khuyến mãi." });
+            }
         }
-      
-        //
-
-        public class ApplyPromotionToCategoryRequest
-        {
-            public int CategoryId { get; set; }
-            public string Name { get; set; }
-            public decimal? DiscountPercentage { get; set; }
-            public DateTime? StartDate { get; set; }
-            public DateTime? EndDate { get; set; }
-        }
-
-
     }
 
-    // Request classes
+    // Request classes - kept in the same file for backward compatibility
     public class CreatePromotionRequest
     {
         public int? ProductId { get; set; }
@@ -374,6 +315,15 @@ namespace QuanLyCuaHangMyPham.Controllers
 
     public class ApplyPromotionToAllRequest
     {
+        public string Name { get; set; }
+        public decimal? DiscountPercentage { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+    }
+
+    public class ApplyPromotionToCategoryRequest
+    {
+        public int CategoryId { get; set; }
         public string Name { get; set; }
         public decimal? DiscountPercentage { get; set; }
         public DateTime? StartDate { get; set; }

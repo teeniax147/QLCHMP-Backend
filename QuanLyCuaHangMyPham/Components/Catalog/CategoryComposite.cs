@@ -1,4 +1,5 @@
-﻿using System;
+﻿// 3. Composite (Danh mục phức hợp có thể chứa danh mục con)
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using QuanLyCuaHangMyPham.Models;
@@ -16,13 +17,9 @@ namespace QuanLyCuaHangMyPham.Components.Categories
         }
 
         public int Id => _category.Id;
-
         public string Name => _category.Name;
-
         public int? ParentId => _category.ParentId;
-
         public Category Category => _category;
-
         public IReadOnlyList<ICategoryComponent> Children => _children.AsReadOnly();
 
         public void Add(ICategoryComponent component)
@@ -38,7 +35,6 @@ namespace QuanLyCuaHangMyPham.Components.Categories
         public void Display(int depth = 0)
         {
             Console.WriteLine($"{new string('-', depth)} {_category.Name}");
-
             foreach (var child in _children)
             {
                 child.Display(depth + 2);
@@ -48,24 +44,20 @@ namespace QuanLyCuaHangMyPham.Components.Categories
         public int CountCategories()
         {
             int count = 1; // Đếm danh mục hiện tại
-
             foreach (var child in _children)
             {
                 count += child.CountCategories();
             }
-
             return count;
         }
 
         public int CountProducts()
         {
-            int count = _category.Products.Count;
-
+            int count = _category.Products?.Count ?? 0;
             foreach (var child in _children)
             {
                 count += child.CountProducts();
             }
-
             return count;
         }
 
@@ -74,19 +66,18 @@ namespace QuanLyCuaHangMyPham.Components.Categories
             return new List<string> { _category.Name };
         }
 
-        public List<CategoryComposite> GetAllSubcategories()
+        // Các phương thức bổ sung cho CategoryComposite
+        public List<CategoryComposite> GetAllCompositeChildren()
         {
             var result = new List<CategoryComposite>();
-
             foreach (var child in _children)
             {
                 if (child is CategoryComposite composite)
                 {
                     result.Add(composite);
-                    result.AddRange(composite.GetAllSubcategories());
+                    result.AddRange(composite.GetAllCompositeChildren());
                 }
             }
-
             return result;
         }
 
@@ -94,7 +85,6 @@ namespace QuanLyCuaHangMyPham.Components.Categories
         {
             if (Id == id)
                 return this;
-
             foreach (var child in _children)
             {
                 if (child is CategoryComposite composite)
@@ -104,7 +94,6 @@ namespace QuanLyCuaHangMyPham.Components.Categories
                         return found;
                 }
             }
-
             return null;
         }
 
@@ -114,11 +103,9 @@ namespace QuanLyCuaHangMyPham.Components.Categories
             {
                 if (child.Id == childId)
                     return true;
-
                 if (child is CategoryComposite composite && composite.IsParentOf(childId))
                     return true;
             }
-
             return false;
         }
     }

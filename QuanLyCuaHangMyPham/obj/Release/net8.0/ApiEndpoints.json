@@ -613,7 +613,13 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "hierarchical",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": [
       {
         "Type": "System.Collections.Generic.IEnumerable\u00601[[QuanLyCuaHangMyPham.Models.Category, QuanLyCuaHangMyPham, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
@@ -717,6 +723,38 @@
   },
   {
     "ContainingType": "QuanLyCuaHangMyPham.Controllers.CategoriesController",
+    "Method": "GetCategoryBreadcrumb",
+    "RelativePath": "api/Categories/{id}/breadcrumb",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CategoriesController",
+    "Method": "GetCategoryHierarchy",
+    "RelativePath": "api/Categories/hierarchy",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "parentId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QuanLyCuaHangMyPham.Controllers.CategoriesController",
     "Method": "GetPagedCategories",
     "RelativePath": "api/Categories/paged",
     "HttpMethod": "GET",
@@ -753,6 +791,11 @@
         "Name": "parentId",
         "Type": "System.Int32",
         "IsRequired": true
+      },
+      {
+        "Name": "recursive",
+        "Type": "System.Boolean",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": [
@@ -2290,7 +2333,7 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "QuanLyCuaHangMyPham.Controllers.PromotionController\u002BApplyPromotionToCategoryRequest",
+        "Type": "QuanLyCuaHangMyPham.Controllers.ApplyPromotionToCategoryRequest",
         "IsRequired": true
       }
     ],

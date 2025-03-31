@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {}
+    "D:\\source\\repos\\DesignPattern\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {}
   },
   "projects": {
-    "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {
+    "D:\\source\\repos\\DesignPattern\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+        "projectUniqueName": "D:\\source\\repos\\DesignPattern\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
         "projectName": "QuanLyCuaHangMyPham",
-        "projectPath": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
+        "projectPath": "D:\\source\\repos\\DesignPattern\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham.csproj",
         "packagesPath": "C:\\Users\\dangt\\.nuget\\packages\\",
-        "outputPath": "D:\\source\\repos\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\obj\\",
+        "outputPath": "D:\\source\\repos\\DesignPattern\\QuanLyCuaHangMyPham\\QuanLyCuaHangMyPham\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\dangt\\AppData\\Roaming\\NuGet\\NuGet.Config",
