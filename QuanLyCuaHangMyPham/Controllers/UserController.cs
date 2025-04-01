@@ -17,9 +17,10 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangMyPham.Models;
 using QuanLyCuaHangMyPham.IdentityModels;
 using Microsoft.AspNetCore.Authorization;
-using static QuanLyCuaHangMyPham.Controllers.UsersController;
 using QuanLyCuaHangMyPham.Services.Email;
 using QuanLyCuaHangMyPham.Services.Email.Strategies;
+using QuanLyCuaHangMyPham.Services.Email.Decorators;
+using QuanLyCuaHangMyPham.Services.Email.Extensions;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -84,20 +85,27 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             // Tạo dữ liệu cho template
             var templateData = new Dictionary<string, object>
-    {
-        { "otp", otp },
-        { "purpose", "đăng ký tài khoản" },
-        { "expireTime", "5 phút" }
-    };
+            {
+                { "otp", otp },
+                { "purpose", "đăng ký tài khoản" },
+                { "expireTime", "5 phút" }
+            };
 
-            // Sử dụng OtpEmailStrategy để gửi email OTP
-            var otpStrategy = new OtpEmailStrategy(templateData);
+            // Tạo base strategy
+            var baseStrategy = new OtpEmailStrategy(templateData);
+
+            // Áp dụng decorator pattern - thêm branding, tracking và footer
+            var decoratedStrategy = baseStrategy
+                .WithBranding()
+                .WithTracking()
+                .WithFooter()
+                .WithDisclaimer();
 
             await _emailService.SendEmailWithStrategyAsync(
                 request.Email,
                 "Xác thực đăng ký tài khoản của bạn",
                 "Vui lòng sử dụng mã OTP này để hoàn tất đăng ký tài khoản tại Cửa Hàng Mỹ Phẩm.",
-                otpStrategy
+                decoratedStrategy
             );
 
             _logger.LogInformation($"Registration OTP sent to {request.Email}");
@@ -144,14 +152,21 @@ namespace QuanLyCuaHangMyPham.Controllers
             // Tạo dữ liệu cho template
             var purposeText = request.OtpPurpose == "register" ? "đăng ký tài khoản" : "khôi phục mật khẩu";
             var templateData = new Dictionary<string, object>
-    {
-        { "otp", otp },
-        { "purpose", purposeText },
-        { "expireTime", "5 phút" }
-    };
+            {
+                { "otp", otp },
+                { "purpose", purposeText },
+                { "expireTime", "5 phút" }
+            };
 
-            // Sử dụng OtpEmailStrategy để gửi email OTP
-            var otpStrategy = new OtpEmailStrategy(templateData);
+            // Tạo base strategy
+            var baseStrategy = new OtpEmailStrategy(templateData);
+
+            // Áp dụng decorator pattern
+            var decoratedStrategy = baseStrategy
+                .WithBranding(primaryColor: request.OtpPurpose == "forgot-password" ? "#f0ad4e" : "#4CAF50")
+                .WithTracking()
+                .WithFooter()
+                .WithDisclaimer();
 
             var subject = request.OtpPurpose == "register"
                         ? "Xác thực đăng ký tài khoản của bạn"
@@ -161,7 +176,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 request.Email,
                 subject,
                 $"Vui lòng sử dụng mã OTP này để {purposeText} tại Cửa Hàng Mỹ Phẩm.",
-                otpStrategy
+                decoratedStrategy
             );
 
             _logger.LogInformation($"OTP resent successfully to {request.Email}.");
@@ -246,19 +261,27 @@ namespace QuanLyCuaHangMyPham.Controllers
 
                             // Gửi email chào mừng sau khi đăng ký thành công
                             var welcomeData = new Dictionary<string, object>
-                    {
-                        { "userName", $"{user.FirstName} {user.LastName}" },
-                        { "shopName", "Cửa Hàng Mỹ Phẩm" },
-                        { "registrationDate", DateTime.Now.ToString("dd/MM/yyyy") }
-                    };
+                            {
+                                { "userName", $"{user.FirstName} {user.LastName}" },
+                                { "shopName", "Cửa Hàng Mỹ Phẩm" },
+                                { "registrationDate", DateTime.Now.ToString("dd/MM/yyyy") }
+                            };
 
-                            var welcomeStrategy = new WelcomeEmailStrategy(welcomeData);
+                            // Tạo base welcome strategy
+                            var baseWelcomeStrategy = new WelcomeEmailStrategy(welcomeData);
+
+                            // Áp dụng decorator pattern để trang trí email
+                            var decoratedWelcomeStrategy = baseWelcomeStrategy
+                                .WithBranding(primaryColor: "#5cb85c") // Xanh lá nhạt hơn cho email chào mừng
+                                .WithTracking()
+                                .WithFooter()
+                                .WithDisclaimer("Đây là email tự động gửi khi bạn hoàn tất quá trình đăng ký tài khoản.");
 
                             await _emailService.SendEmailWithStrategyAsync(
                                 user.Email,
                                 "Chào mừng bạn đến với Cửa Hàng Mỹ Phẩm",
                                 "Cảm ơn bạn đã đăng ký tài khoản tại cửa hàng của chúng tôi. Chúng tôi rất vui mừng được phục vụ bạn. Hãy khám phá các sản phẩm của chúng tôi và không ngần ngại liên hệ nếu bạn cần hỗ trợ.",
-                                welcomeStrategy
+                                decoratedWelcomeStrategy
                             );
 
                             return Ok("Xác thực thành công. Tài khoản của bạn đã được tạo và thông tin khách hàng đã được thêm.");
@@ -305,14 +328,15 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return BadRequest("Mã OTP không chính xác hoặc đã hết hạn.");
             }
         }
+
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var claims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-        new Claim(JwtRegisteredClaimNames.Email, user.Email),
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-    };
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
 
             // Lấy các vai trò của người dùng và thêm chúng vào claims
             var roles = await _userManager.GetRolesAsync(user);
@@ -346,6 +370,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
         // Đăng nhập người dùng với JWT
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser([FromBody] LoginRequest request)
@@ -370,7 +395,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             var roles = await _userManager.GetRolesAsync(user);
 
             // Tạo token JWT nếu đăng nhập thành công
-            var token = GenerateJwtToken(user);
+            var token = await GenerateJwtToken(user);
 
             // Trả về thông báo thành công, token và thông tin vai trò
             return Ok(new
@@ -383,8 +408,6 @@ namespace QuanLyCuaHangMyPham.Controllers
                 roles = roles // Trả về danh sách vai trò của người dùng
             });
         }
-
-
 
         // Gửi OTP để khôi phục mật khẩu
         [HttpPost("forgot-password")]
@@ -401,21 +424,28 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             // Tạo dữ liệu cho template
             var templateData = new Dictionary<string, object>
-    {
-        { "otp", otp },
-        { "purpose", "khôi phục mật khẩu" },
-        { "expireTime", "5 phút" },
-        { "userName", $"{user.FirstName} {user.LastName}" }
-    };
+            {
+                { "otp", otp },
+                { "purpose", "khôi phục mật khẩu" },
+                { "expireTime", "5 phút" },
+                { "userName", $"{user.FirstName} {user.LastName}" }
+            };
 
-            // Sử dụng OtpEmailStrategy để gửi email OTP
-            var otpStrategy = new OtpEmailStrategy(templateData);
+            // Tạo base strategy
+            var baseOtpStrategy = new OtpEmailStrategy(templateData);
+
+            // Áp dụng decorator pattern - thêm branding, tracking, footer và disclaimer
+            var decoratedOtpStrategy = baseOtpStrategy
+                .WithBranding(primaryColor: "#f0ad4e") // Màu vàng cam cho email security
+                .WithTracking()
+                .WithFooter()
+                .WithDisclaimer("Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi nếu bạn lo ngại về an toàn tài khoản.");
 
             await _emailService.SendEmailWithStrategyAsync(
                 request.Email,
                 "Mã OTP để khôi phục mật khẩu",
                 "Vui lòng sử dụng mã OTP này để khôi phục mật khẩu tài khoản của bạn tại Cửa Hàng Mỹ Phẩm.",
-                otpStrategy
+                decoratedOtpStrategy
             );
 
             _logger.LogInformation($"Password reset OTP sent to {request.Email}");
@@ -453,20 +483,26 @@ namespace QuanLyCuaHangMyPham.Controllers
 
                 // Tạo dữ liệu cho email thông báo
                 var resetData = new Dictionary<string, object>
-        {
-            { "userName", $"{user.FirstName} {user.LastName}" },
-            { "resetTime", DateTime.Now.ToString("HH:mm dd/MM/yyyy") },
-            { "ipAddress", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "không xác định" }
-        };
+                {
+                    { "userName", $"{user.FirstName} {user.LastName}" },
+                    { "resetTime", DateTime.Now.ToString("HH:mm dd/MM/yyyy") },
+                    { "ipAddress", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "không xác định" }
+                };
 
-                // Sử dụng PasswordResetConfirmationStrategy
-                var resetConfirmationStrategy = new PasswordResetConfirmationStrategy(resetData);
+                // Tạo base strategy
+                var baseResetStrategy = new PasswordResetConfirmationStrategy(resetData);
+
+                // Áp dụng decorator pattern - thêm branding với màu cảnh báo, disclaimer và footer
+                var decoratedResetStrategy = baseResetStrategy
+                    .WithBranding(primaryColor: "#d9534f") // Màu đỏ cho email bảo mật
+                    .WithFooter()
+                    .WithDisclaimer("Nếu bạn không thực hiện thao tác này, vui lòng liên hệ với chúng tôi ngay lập tức để bảo vệ tài khoản của bạn.");
 
                 await _emailService.SendEmailWithStrategyAsync(
                     request.Email,
                     "Thông báo đặt lại mật khẩu thành công",
                     "Mật khẩu của bạn đã được đặt lại thành công. Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ với chúng tôi ngay lập tức.",
-                    resetConfirmationStrategy
+                    decoratedResetStrategy
                 );
 
                 _logger.LogInformation($"Password reset successful for {request.Email}");
@@ -478,6 +514,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi đặt lại mật khẩu.");
             }
         }
+
         [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoRequest request)
@@ -547,6 +584,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok(userInfo);
         }
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -592,6 +630,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok("Mật khẩu đã được thay đổi thành công.");
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPost("create-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
@@ -663,6 +702,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok($"Tài khoản {request.Role} đã được tạo thành công.");
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPost("assign-role")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
@@ -681,6 +721,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok($"Đã gán vai trò {request.Role} cho người dùng thành công.");
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("lock")]
         public async Task<IActionResult> LockUser([FromBody] LockUserRequest request)
@@ -714,6 +755,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             _logger.LogInformation($"Tài khoản của {user.UserName} đã bị khóa đến {lockoutEnd}.");
             return Ok(new { message = $"Tài khoản đã bị khóa đến {lockoutEnd}." });
         }
+
         [Authorize(Roles = "Admin")]
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser(int userId)
@@ -735,6 +777,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             _logger.LogInformation($"Đã xóa người dùng {user.UserName} thành công.");
             return Ok(new { message = "Xóa người dùng thành công." });
         }
+
         [Authorize]
         [HttpPut("change-email")]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
@@ -758,6 +801,7 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok(new { message = "Email đã được thay đổi thành công." });
         }
+
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
@@ -776,13 +820,14 @@ namespace QuanLyCuaHangMyPham.Controllers
 
             return Ok(new { message = "Đăng xuất thành công." });
         }
+
         [Authorize(Roles = "Admin")]
         [HttpGet("list")]
         public async Task<IActionResult> GetUsersList(
-    int page = 1,
-    int pageSize = 10,
-    string? role = null,
-    string? search = null)
+            int page = 1,
+            int pageSize = 10,
+            string? role = null,
+            string? search = null)
         {
             var query = _userManager.Users.AsQueryable();
 
@@ -828,6 +873,7 @@ namespace QuanLyCuaHangMyPham.Controllers
                 Users = users
             });
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("unlock")]
         public async Task<IActionResult> UnlockUser([FromBody] UnlockUserRequest request)
@@ -865,6 +911,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             _logger.LogInformation($"Đã mở khóa tài khoản của {user.UserName} thành công.");
             return Ok(new { message = "Tài khoản đã được mở khóa thành công." });
         }
+
         // Thêm vào lớp UsersController
         private async Task SendOtpEmail(string email, string otp, string purpose)
         {
@@ -888,14 +935,22 @@ namespace QuanLyCuaHangMyPham.Controllers
                     break;
             }
 
-            // Sử dụng OtpEmailStrategy
-            var strategy = new OtpEmailStrategy(otp, purpose);
+            // Tạo strategy cơ bản
+            var baseStrategy = new OtpEmailStrategy(otp, purpose);
+
+            // Áp dụng decorator pattern
+            var decoratedStrategy = baseStrategy
+                .WithBranding(primaryColor: purpose == "forgot-password" ? "#f0ad4e" : "#4CAF50")
+                .WithTracking()
+                .WithFooter()
+                .WithDisclaimer();
 
             // Gửi email với strategy
-            await _emailService.SendEmailWithStrategyAsync(email, subject, content, strategy);
+            await _emailService.SendEmailWithStrategyAsync(email, subject, content, decoratedStrategy);
 
             _logger.LogInformation($"Sent OTP email to {email} for purpose: {purpose}");
         }
+
         // Các lớp request khác
         public class RegisterRequest
         {
@@ -990,6 +1045,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             public string EmailOrUsername { get; set; }  // Cho phép nhập vào cả email hoặc username
             public string Password { get; set; }
         }
+
         public class UpdateUserInfoRequest
         {
             [Required(ErrorMessage = "Vui lòng cung cấp họ.")]
@@ -1007,6 +1063,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             [StringLength(255, ErrorMessage = "Địa chỉ không được vượt quá 255 ký tự.")]
             public string Address { get; set; } // Địa chỉ người dùng
         }
+
         public class ChangePasswordRequest
         {
             [Required(ErrorMessage = "Vui lòng cung cấp mật khẩu hiện tại.")]
@@ -1020,6 +1077,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             [Compare("NewPassword", ErrorMessage = "Mật khẩu mới và xác nhận mật khẩu không khớp.")]
             public string ConfirmNewPassword { get; set; }
         }
+
         // Model cho API tạo người dùng mới
         public class CreateUserRequest
         {
@@ -1056,23 +1114,27 @@ namespace QuanLyCuaHangMyPham.Controllers
             [RegularExpression("^(Admin|Staff)$", ErrorMessage = "Vai trò chỉ có thể là 'Admin' hoặc 'Staff'.")]
             public string Role { get; set; }
         }
+
         public class AssignRoleRequest
         {
             [Required] public int UserId { get; set; }
             [Required] public string Role { get; set; }
         }
+
         public class LockUserRequest
         {
             [Required] public int UserId { get; set; }
             [Required] public string LockoutEnd { get; set; }
             public bool EnableLockout { get; set; } = true;  // Giá trị mặc định là bật Lockout
         }
+
         public class ChangeEmailRequest
         {
             [Required(ErrorMessage = "Vui lòng cung cấp email mới.")]
             [EmailAddress(ErrorMessage = "Email phải hợp lệ, bao gồm '@' và tên miền.")]
             public string NewEmail { get; set; }
         }
+
         public class UnlockUserRequest
         {
             [Required] public int UserId { get; set; }

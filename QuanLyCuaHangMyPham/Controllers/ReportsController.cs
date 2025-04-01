@@ -175,7 +175,7 @@ namespace QuanLyCuaHangMyPham.Controllers
             public string PhoneNumber { get; set; }
             public string Email { get; set; }
         }
-
+        /*
         // 2. Thống kê doanh thu theo thương hiệu trong khoảng thời gian
         [HttpGet("revenue/brands/from-to")]
         public async Task<IActionResult> GetRevenueByBrandFromToDate(DateTime startDate, DateTime endDate)
@@ -458,6 +458,6 @@ namespace QuanLyCuaHangMyPham.Controllers
                 EndDate = endDate,
                 TopCustomers = topCustomers
             });
-        }
+        }*/
     }
 }
