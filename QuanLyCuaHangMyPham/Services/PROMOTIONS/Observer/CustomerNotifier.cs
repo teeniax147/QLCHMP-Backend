@@ -1,16 +1,12 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QuanLyCuaHangMyPham.Data;
 using QuanLyCuaHangMyPham.Models;
 using QuanLyCuaHangMyPham.Services.Email;
-using QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-
 
 namespace QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer.Observers
 {
@@ -25,9 +21,9 @@ namespace QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer.Observers
             IEmailService emailService,
             ILogger<CustomerNotifier> logger)
         {
-            _context = context;
-            _emailService = emailService;
-            _logger = logger;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task OnPromotionCreated(Promotion promotion)
@@ -49,56 +45,56 @@ namespace QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer.Observers
 
         private async Task SendPromotionNotifications(Promotion promotion, string actionType)
         {
-            if (promotion.ProductId.HasValue)
+            if (!promotion.ProductId.HasValue)
+                return;
+
+            try
             {
-                try
+                // Lấy thông tin sản phẩm
+                var product = await _context.Products
+                    .Include(p => p.Brand)
+                    .FirstOrDefaultAsync(p => p.Id == promotion.ProductId.Value);
+
+                if (product == null) return;
+
+                // Tìm các khách hàng quan tâm (mở rộng từ chỉ khách hàng đã mua)
+                var interestedCustomers = await GetInterestedCustomers(promotion.ProductId.Value);
+
+                foreach (var customerId in interestedCustomers)
                 {
-                    // Lấy thông tin sản phẩm
-                    var product = await _context.Products
-                        .Include(p => p.Brand)
-                        .FirstOrDefaultAsync(p => p.Id == promotion.ProductId.Value);
-
-                    if (product == null) return;
-
-                    // Tìm các khách hàng quan tâm (mở rộng từ chỉ khách hàng đã mua)
-                    var interestedCustomers = await GetInterestedCustomers(promotion.ProductId.Value);
-
-                    foreach (var customerId in interestedCustomers)
+                    try
                     {
-                        try
-                        {
-                            var customer = await _context.Customers
-                                .Include(c => c.User)
-                                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+                        var customer = await _context.Customers
+                            .Include(c => c.User)
+                            .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
-                            if (customer?.User?.Email == null) continue;
+                        if (customer?.User?.Email == null) continue;
 
-                            // Gửi email HTML thay vì email văn bản thuần
-                            string emailHtml = GeneratePromotionEmailHtml(
-                                customer.User.FirstName ?? "Quý khách",
-                                product,
-                                promotion,
-                                actionType
-                            );
+                        // Gửi email HTML thay vì email văn bản thuần
+                        string emailHtml = GeneratePromotionEmailHtml(
+                            customer.User.FirstName ?? "Quý khách",
+                            product,
+                            promotion,
+                            actionType
+                        );
 
-                            await _emailService.SendHtmlEmailAsync(
-                                customer.User.Email,
-                                $"Khuyến mãi {actionType} cho sản phẩm bạn quan tâm",
-                                emailHtml
-                            );
+                        await _emailService.SendHtmlEmailAsync(
+                            customer.User.Email,
+                            $"Khuyến mãi {actionType} cho sản phẩm bạn quan tâm",
+                            emailHtml
+                        );
 
-                            _logger.LogInformation($"Đã gửi email thông báo khuyến mãi cho khách hàng {customer.CustomerId}");
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Lỗi khi gửi email thông báo cho khách hàng {customerId}");
-                        }
+                        _logger.LogInformation($"Đã gửi email thông báo khuyến mãi cho khách hàng {customer.CustomerId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Lỗi khi gửi email thông báo cho khách hàng {customerId}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Lỗi khi xử lý thông báo khuyến mãi qua email");
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xử lý thông báo khuyến mãi qua email");
             }
         }
 
@@ -120,10 +116,8 @@ namespace QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer.Observers
                 .ToListAsync();
 
             // Khách hàng đã thêm vào danh sách yêu thích
-            // Lỗi ở đây - bỏ phần lấy UserId từ Claims
             var favoriteCustomers = await _context.Favorites
                 .Where(f => f.ProductId == productId)
-                // Sửa dòng này tùy theo cấu trúc của model Favorite
                 .Select(f => f.UserId) // Giả sử Favorite có UserId thay vì CustomerId
                 .Distinct()
                 .ToListAsync();

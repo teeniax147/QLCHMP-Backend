@@ -33,7 +33,11 @@ using QuanLyCuaHangMyPham.Mediators.Cart;
 using QuanLyCuaHangMyPham.Handlers.Cart;
 using QuanLyCuaHangMyPham.Services.Analytics;
 using QuanLyCuaHangMyPham.Services.Cart;
-
+// Thêm các using statements cần thiết
+using QuanLyCuaHangMyPham.Services.PROMOTIONS;
+using QuanLyCuaHangMyPham.Services.PROMOTIONS.Flyweight;
+using QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer;
+using QuanLyCuaHangMyPham.Services.PROMOTIONS.Observer.Observers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đặt tên cho CORS Policy
@@ -172,6 +176,16 @@ builder.Services.AddScoped<IMomoService, MomoService>();
 // Đăng ký EmailService để sử dụng qua Dependency Injection (DI)
 builder.Services.AddEmailServices();
 // Trong Program.cs
+// Đăng ký Observer Pattern
+builder.Services.AddSingleton<IPromotionSubject, PromotionSubject>();
+builder.Services.AddScoped<IPromotionObserver, CustomerNotifier>();
+builder.Services.AddScoped<IPromotionObserver, ProductPriceUpdater>();
+
+// Đăng ký Flyweight Pattern
+builder.Services.AddSingleton<PromotionFlyweightFactory>();
+
+// Đăng ký Promotion Service
+builder.Services.AddScoped<IPromotionService, PromotionService>();
 builder.Services.AddScoped<QuanLyCuaHangMyPham.Handlers.Favorites.FavoriteHandlerChain>();
 // Đăng ký IMomoService với lớp triển khai MomoService
 // Trong Program.cs
@@ -230,7 +244,22 @@ builder.Services.AddScoped<QuanLyCuaHangMyPham.Mediators.Cart.CartMediatorConfig
 
 // XÂY DỰNG ỨNG DỤNG - SAU DÒNG NÀY KHÔNG ĐƯỢC THÊM DỊCH VỤ
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    var promotionSubject = serviceProvider.GetRequiredService<IPromotionSubject>();
 
+    // Đăng ký tất cả các observer với subject
+    var observers = serviceProvider.GetServices<IPromotionObserver>();
+    foreach (var observer in observers)
+    {
+        promotionSubject.Attach(observer);
+    }
+
+    // Log thông tin
+    var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Đã đăng ký {Count} observers cho PromotionSubject", observers.Count());
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction()) // Cấu hình môi trường tùy theo nhu cầu
 {

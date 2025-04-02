@@ -1,4 +1,5 @@
-﻿using QuanLyCuaHangMyPham.Models;
+﻿using System.Threading.Tasks;
+using QuanLyCuaHangMyPham.Models;
 
 namespace QuanLyCuaHangMyPham.Services.PROMOTIONS
 {
