@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using QuanLyCuaHangMyPham.Data;
 using QuanLyCuaHangMyPham.Facades;
@@ -18,15 +19,18 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS.Facades
     {
         private readonly IOrderService _orderService;
         private readonly ILogger<OrderFacade> _logger;
+        private readonly IMemoryCache _cache;
         private readonly QuanLyCuaHangMyPhamContext _context;
 
         public OrderFacade(
             IOrderService orderService,
             ILogger<OrderFacade> logger,
+            IMemoryCache cache,
             QuanLyCuaHangMyPhamContext context)
         {
             _orderService = orderService;
             _logger = logger;
+            _cache = cache;
             _context = context;
         }
 
@@ -141,12 +145,25 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS.Facades
         {
             try
             {
-                _logger.LogInformation($"Gọi CreateOrder cho userId={userId} từ Facade");
+                _logger.LogInformation($"OrderFacade: Bắt đầu tạo đơn hàng cho userId: {userId}");
+
+                // Kiểm tra cache trước khi tạo đơn hàng
+                string cacheKey = $"PreviewOrder:{userId}";
+                _logger.LogInformation($"OrderFacade: Kiểm tra cache với key: {cacheKey}");
+
+                if (!_cache.TryGetValue(cacheKey, out var previewData))
+                {
+                    _logger.LogWarning($"OrderFacade: Không tìm thấy dữ liệu cache với key: {cacheKey}");
+                    return new BadRequestObjectResult("Không có dữ liệu đơn hàng tạm thời. Vui lòng thực hiện lại bước Preview.");
+                }
+
+                _logger.LogInformation($"OrderFacade: Đã tìm thấy dữ liệu cache với key: {cacheKey}");
+
                 return await _orderService.CreateOrder(userId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Lỗi khi tạo đơn hàng cho userId={userId}");
+                _logger.LogError(ex, $"OrderFacade: Lỗi khi tạo đơn hàng cho userId: {userId}");
                 return new StatusCodeResult(500);
             }
         }

@@ -448,25 +448,41 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS
         }
 
         // Phương thức nội bộ để xử lý logic tạo đơn hàng
+        // Phương thức nội bộ để xử lý logic tạo đơn hàng
         private async Task<IActionResult> CreateOrderInternal(int userId)
         {
+            _logger.LogInformation($"Bắt đầu tạo đơn hàng cho userId: {userId}");
+
+            // Kiểm tra cache - In ra chi tiết để debug
+            string cacheKey = $"PreviewOrder:{userId}";
+            _logger.LogInformation($"Tìm kiếm dữ liệu cache với key: {cacheKey}");
+
+            bool cacheExists = _cache.TryGetValue(cacheKey, out var previewData);
+            _logger.LogInformation($"Cache tồn tại: {cacheExists}");
+
+            if (!cacheExists || previewData == null)
+            {
+                _logger.LogWarning($"Không tìm thấy dữ liệu cache với key: {cacheKey}");
+                return new BadRequestObjectResult("Không có dữ liệu đơn hàng tạm thời. Vui lòng thực hiện lại bước Preview.");
+            }
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    // Kiểm tra dữ liệu giỏ hàng trong cache
-                    if (!_cache.TryGetValue($"PreviewOrder:{userId}", out var previewData))
-                    {
-                        return new BadRequestObjectResult("Không có dữ liệu đơn hàng tạm thời. Vui lòng thực hiện lại bước Preview.");
-                    }
+                    // Sử dụng dynamic để truy cập thuộc tính từ object anonymous
+                    dynamic previewOrder = previewData;
 
-                    var previewOrder = JsonConvert.DeserializeObject<PreviewOrderResponse>(
-                        JsonConvert.SerializeObject(previewData));
+                    _logger.LogInformation($"Đã tìm thấy dữ liệu preview với tổng tiền: {previewOrder.TotalAmount}");
 
                     // Lấy thông tin khách hàng từ cơ sở dữ liệu
-                    var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+                    var customer = await _context.Customers
+                        .Include(c => c.User)
+                        .FirstOrDefaultAsync(c => c.UserId == userId);
+
                     if (customer == null)
                     {
+                        _logger.LogWarning($"Không tìm thấy thông tin khách hàng với userId: {userId}");
                         return new BadRequestObjectResult("Không tìm thấy thông tin khách hàng.");
                     }
 
@@ -478,16 +494,21 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS
 
                     if (!cartItems.Any())
                     {
+                        _logger.LogWarning($"Giỏ hàng trống cho khách hàng: {customer.CustomerId}");
                         return new BadRequestObjectResult("Giỏ hàng trống.");
                     }
 
-                    // Lấy thông tin Coupon và ShippingCompany
-                    var coupon = string.IsNullOrEmpty(previewOrder.CouponCode)
-                        ? null
-                        : await _context.Coupons.FirstOrDefaultAsync(c => c.Code == previewOrder.CouponCode);
+                    _logger.LogInformation($"Tìm thấy {cartItems.Count} sản phẩm trong giỏ hàng");
 
-                    var shippingCompany = previewOrder.ShippingCompanyId != null
-                        ? await _context.ShippingCompanies.FirstOrDefaultAsync(sc => sc.Id == previewOrder.ShippingCompanyId)
+                    // Lấy thông tin Coupon và ShippingCompany
+                    var couponCode = (string)previewOrder.CouponCode;
+                    var coupon = string.IsNullOrEmpty(couponCode)
+                        ? null
+                        : await _context.Coupons.FirstOrDefaultAsync(c => c.Code == couponCode);
+
+                    var shippingCompanyId = (int?)previewOrder.ShippingCompanyId;
+                    var shippingCompany = shippingCompanyId != null
+                        ? await _context.ShippingCompanies.FirstOrDefaultAsync(sc => sc.Id == shippingCompanyId)
                         : null;
 
                     // Tạo đơn hàng mới
@@ -495,15 +516,15 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS
                     {
                         CustomerId = customer.CustomerId,
                         CouponId = coupon?.Id,
-                        PaymentMethodId = previewOrder.PaymentMethodId,
+                        PaymentMethodId = (int?)previewOrder.PaymentMethodId,
                         ShippingCompanyId = shippingCompany?.Id,
-                        ShippingAddress = previewOrder.ShippingAddress ?? customer.User.Address,
-                        PhoneNumber = previewOrder.PhoneNumber ?? customer.User.PhoneNumber,
-                        Email = previewOrder.Email ?? customer.User.Email,
-                        OriginalTotalAmount = previewOrder.OriginalTotalAmount,
-                        TotalAmount = previewOrder.TotalAmount,
-                        ShippingCost = previewOrder.ShippingCost,
-                        DiscountApplied = previewOrder.DiscountAmount,
+                        ShippingAddress = (string)previewOrder.ShippingAddress ?? customer.User.Address,
+                        PhoneNumber = (string)previewOrder.PhoneNumber ?? customer.User.PhoneNumber,
+                        Email = (string)previewOrder.Email ?? customer.User.Email,
+                        OriginalTotalAmount = (decimal)previewOrder.OriginalTotalAmount,
+                        TotalAmount = (decimal)previewOrder.TotalAmount,
+                        ShippingCost = (decimal)previewOrder.ShippingCost,
+                        DiscountApplied = (decimal)previewOrder.DiscountAmount,
                         OrderDate = DateTime.Now,
                         Status = "Chờ Xác Nhận",
                         PaymentStatus = "Chưa Thanh Toán"
@@ -512,8 +533,11 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS
                     _context.Orders.Add(order);
                     await _context.SaveChangesAsync();
 
+                    _logger.LogInformation($"Đã tạo đơn hàng mới với ID: {order.Id}");
+
                     if (order.Id <= 0)
                     {
+                        _logger.LogError("Lỗi khi lưu đơn hàng vào database");
                         return new StatusCodeResult(500);
                     }
 
@@ -530,20 +554,30 @@ namespace QuanLyCuaHangMyPham.Services.ORDERS
                     _context.OrderDetails.AddRange(orderDetails);
                     await _context.SaveChangesAsync();
 
+                    _logger.LogInformation($"Đã thêm {orderDetails.Count} chi tiết đơn hàng");
+
                     // Xóa các sản phẩm trong giỏ hàng sau khi tạo đơn hàng
                     _context.CartItems.RemoveRange(cartItems);
                     await _context.SaveChangesAsync();
 
+                    _logger.LogInformation($"Đã xóa {cartItems.Count} sản phẩm từ giỏ hàng");
+
+                    // Xóa cache sau khi sử dụng
+                    _cache.Remove(cacheKey);
+                    _logger.LogInformation($"Đã xóa cache với key: {cacheKey}");
+
                     // Commit transaction
                     await transaction.CommitAsync();
+                    _logger.LogInformation("Đã commit transaction thành công");
 
-                    return new OkObjectResult(new { Message = "Đơn hàng đã được tạo.", OrderId = order.Id });
+                    return new OkObjectResult(new { Message = "Đơn hàng đã được tạo thành công.", OrderId = order.Id });
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Lỗi khi tạo đơn hàng cho người dùng có ID {UserId}", userId);
                     // Rollback transaction in case of error
                     await transaction.RollbackAsync();
+                    _logger.LogInformation("Đã rollback transaction do lỗi");
                     return new StatusCodeResult(500);
                 }
             }

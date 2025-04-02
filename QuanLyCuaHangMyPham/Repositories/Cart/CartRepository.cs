@@ -8,18 +8,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using System.Data;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace QuanLyCuaHangMyPham.Repositories.Cart
 {
     public class CartRepository
     {
         private readonly QuanLyCuaHangMyPhamContext _context;
+        private readonly IMemoryCache _cache;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<CartRepository> _logger; // Thêm field ILogger
 
-        public CartRepository(QuanLyCuaHangMyPhamContext context, IHttpContextAccessor httpContextAccessor)
+        public CartRepository(
+            QuanLyCuaHangMyPhamContext context,
+            IMemoryCache cache,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<CartRepository> logger) // Thêm tham số logger vào constructor
         {
             _context = context;
+            _cache = cache;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger; // Khởi tạo logger
         }
 
         #region User Cart Methods
@@ -303,20 +314,29 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
         {
             try
             {
+                // Ghi log bắt đầu
+                _logger.LogInformation($"Bắt đầu tạo preview đơn hàng cho userId: {userId}");
+
                 var customer = await _context.Customers
                     .Include(c => c.MembershipLevel)
                     .FirstOrDefaultAsync(c => c.UserId == userId);
-
                 if (customer == null)
-                    return (false, null);
+                {
+                    _logger.LogWarning($"Không tìm thấy khách hàng với userId: {userId}");
+                    return (false, "Không tìm thấy thông tin khách hàng.");
+                }
 
                 var cartItems = await _context.CartItems
                     .Include(ci => ci.Product)
                     .Where(ci => ci.Cart.CustomerId == customer.CustomerId)
                     .ToListAsync();
-
                 if (!cartItems.Any())
-                    return (false, null);
+                {
+                    _logger.LogWarning($"Giỏ hàng trống cho khách hàng: {customer.CustomerId}");
+                    return (false, "Giỏ hàng trống.");
+                }
+
+                _logger.LogInformation($"Tìm thấy {cartItems.Count} sản phẩm trong giỏ hàng");
 
                 decimal originalTotalAmount = cartItems.Sum(ci => ci.Product.Price * ci.Quantity);
                 decimal discountAmount = 0;
@@ -336,7 +356,6 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
                         discountAmount = coupon.DiscountAmount ?? (coupon.DiscountPercentage.HasValue
                             ? originalTotalAmount * (coupon.DiscountPercentage.Value / 100)
                             : 0);
-
                         if (coupon.MaxDiscountAmount.HasValue && discountAmount > coupon.MaxDiscountAmount.Value)
                         {
                             discountAmount = coupon.MaxDiscountAmount.Value;
@@ -354,7 +373,6 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
                 {
                     var shippingCompany = await _context.ShippingCompanies
                         .FirstOrDefaultAsync(sc => sc.Id == shippingCompanyId.Value);
-
                     if (shippingCompany != null)
                     {
                         shippingCost = shippingCompany.ShippingCost ?? 0;
@@ -374,9 +392,10 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
                     ImageUrl = ci.Product.ImageUrl
                 }).ToList();
 
+                // Tạo đối tượng preview để lưu vào cache
                 var previewData = new
                 {
-                    CartItems = cartDetails,
+                    Items = cartDetails, // Đổi tên từ CartItems thành Items để tương thích
                     OriginalTotalAmount = originalTotalAmount,
                     DiscountAmount = discountAmount,
                     ShippingCost = shippingCost,
@@ -389,10 +408,25 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
                     Email = email
                 };
 
+                // *** VẤN ĐỀ CHÍNH: THÊM ĐOẠN CODE LƯU VÀO CACHE ***
+                string cacheKey = $"PreviewOrder:{userId}";
+                _logger.LogInformation($"Lưu dữ liệu vào cache với key: {cacheKey}");
+
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(30)) // Tăng thời gian cache lên 30 phút
+                    .SetPriority(CacheItemPriority.High);
+
+                _cache.Set(cacheKey, previewData, cacheOptions);
+
+                // Kiểm tra xác nhận cache đã được lưu đúng
+                bool cacheSet = _cache.TryGetValue(cacheKey, out var cachedData);
+                _logger.LogInformation($"Xác nhận cache đã được lưu: {cacheSet}");
+
                 return (true, previewData);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Lỗi khi tạo preview đơn hàng");
                 return (false, ex.Message);
             }
         }
@@ -637,8 +671,8 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
 
         // Phương thức cho PreviewGuestOrderCommand
         public async Task<(bool success, object previewData)> PreviewGuestOrder(
-            string couponCode, int? shippingCompanyId, int? paymentMethodId,
-            string shippingAddress, string phoneNumber, string email)
+    string couponCode, int? shippingCompanyId, int? paymentMethodId,
+    string shippingAddress, string phoneNumber, string email)
         {
             try
             {
@@ -653,26 +687,27 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
 
                 // Deserialize giỏ hàng từ session
                 var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartItemsJson);
-
                 if (cartItems == null || !cartItems.Any())
                 {
                     return (false, "Giỏ hàng trống");
                 }
 
-                // Lấy danh sách ID sản phẩm
+                // Lấy danh sách ID sản phẩm từ session
                 var productIds = cartItems.Select(ci => ci.ProductId).Distinct().ToList();
 
-                // Lấy thông tin sản phẩm từ database
+                // Tạo chuỗi ID cho câu truy vấn SQL (đảm bảo không có dấu phẩy thừa)
+                string idList = string.Join(",", productIds);
+
+                // Lấy thông tin sản phẩm từ database bằng FromSqlRaw
                 var products = await _context.Products
-                    .Where(p => productIds.Contains(p.Id))
-                    .Select(p => new
-                    {
-                        p.Id,
-                        p.Name,
-                        p.Price,
-                        p.ImageUrl
-                    })
+                    .FromSqlRaw($"SELECT id AS Id, name AS Name, price AS Price, image_url AS ImageUrl FROM Products WHERE id IN ({idList})")
                     .ToListAsync();
+
+                // Kiểm tra xem có sản phẩm nào không
+                if (!products.Any())
+                {
+                    return (false, "Không tìm thấy sản phẩm trong giỏ hàng.");
+                }
 
                 // Tạo chi tiết giỏ hàng
                 var cartDetails = cartItems
@@ -711,10 +746,6 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
                         {
                             discountAmount = Math.Min(discountAmount, coupon.MaxDiscountAmount.Value);
                         }
-                    }
-                    else
-                    {
-                        return (false, "Mã giảm giá không hợp lệ hoặc đã hết số lượng.");
                     }
                 }
 
@@ -760,6 +791,10 @@ namespace QuanLyCuaHangMyPham.Repositories.Cart
                 return (false, ex.Message);
             }
         }
+
+
+
+
 
         #endregion
     }

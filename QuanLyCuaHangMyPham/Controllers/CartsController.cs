@@ -17,6 +17,9 @@ using QuanLyCuaHangMyPham.Mediators;
 using QuanLyCuaHangMyPham.Events;
 using QuanLyCuaHangMyPham.Repositories;
 using QuanLyCuaHangMyPham.Repositories.Cart;
+using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using static QuanLyCuaHangMyPham.Controllers.ProductsController;
 
 namespace QuanLyCuaHangMyPham.Controllers
 {
@@ -181,30 +184,185 @@ namespace QuanLyCuaHangMyPham.Controllers
         {
             try
             {
-                // Sử dụng Command Pattern
-                var command = new PreviewGuestOrderCommand(
-                    _cartRepository,
-                    request.CouponCode,
-                    request.ShippingCompanyId,
-                    request.PaymentMethodId,
-                    request.ShippingAddress,
-                    request.PhoneNumber,
-                    request.Email);
-
-                var result = await _cartCommandHandler.HandleAsync(command, 0, "PreviewGuestOrder");
-
-                if (result.Success)
+                // Lấy giỏ hàng từ session
+                var cartItemsJson = HttpContext.Session.GetString("CartItems");
+                if (string.IsNullOrEmpty(cartItemsJson))
                 {
-                    return Ok(result.Data);
+                    return Ok(new
+                    {
+                        Message = "Giỏ hàng của bạn đang trống.",
+                        CartItems = new List<object>(),
+                        TotalAmount = 0
+                    });
                 }
 
-                return BadRequest(result.Message);
+                // Deserialize giỏ hàng từ session
+                var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartItemsJson);
+                if (cartItems == null || !cartItems.Any())
+                {
+                    return Ok(new
+                    {
+                        Message = "Giỏ hàng của bạn đang trống.",
+                        CartItems = new List<object>(),
+                        TotalAmount = 0
+                    });
+                }
+
+                // Lấy danh sách ID sản phẩm từ session
+                var productIds = cartItems.Select(ci => ci.ProductId).Distinct().ToList();
+                if (!productIds.Any())
+                {
+                    return Ok(new
+                    {
+                        Message = "Giỏ hàng của bạn đang trống.",
+                        CartItems = new List<object>(),
+                        TotalAmount = 0
+                    });
+                }
+
+                // Chuẩn bị danh sách sản phẩm
+                List<ProductDTO> products = new List<ProductDTO>();
+
+                // Sử dụng SqlConnection để truy vấn thủ công
+                using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+                {
+                    await connection.OpenAsync();
+
+                    // Tạo câu truy vấn động với danh sách ID sản phẩm
+                    string productQuery = $@"
+                SELECT id AS Id, 
+                       name AS Name, 
+                       price AS Price, 
+                       image_url AS ImageUrl 
+                FROM Products 
+                WHERE id IN ({string.Join(",", productIds)})";
+
+                    using (var command = new SqlCommand(productQuery, connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                products.Add(new ProductDTO
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    ImageUrl = reader.IsDBNull(reader.GetOrdinal("ImageUrl"))
+                                        ? null
+                                        : reader.GetString(reader.GetOrdinal("ImageUrl"))
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Kiểm tra xem có sản phẩm nào không
+                if (!products.Any())
+                {
+                    return Ok(new
+                    {
+                        Message = "Không tìm thấy sản phẩm trong giỏ hàng.",
+                        CartItems = new List<object>(),
+                        TotalAmount = 0
+                    });
+                }
+
+                // Tạo chi tiết giỏ hàng
+                var cartDetails = cartItems
+                    .Join(products,
+                        ci => ci.ProductId,
+                        p => p.Id,
+                        (cartItem, product) => new
+                        {
+                            ProductId = cartItem.ProductId,
+                            ProductName = product.Name,
+                            Quantity = cartItem.Quantity,
+                            UnitPrice = product.Price,
+                            TotalPrice = cartItem.Quantity * product.Price,
+                            ImageUrl = product.ImageUrl
+                        })
+                    .ToList();
+
+                // Tính tổng tiền gốc
+                decimal originalTotalAmount = cartDetails.Sum(ci => ci.TotalPrice);
+
+                // Xử lý giảm giá
+                decimal discountAmount = 0;
+                if (!string.IsNullOrEmpty(request.CouponCode))
+                {
+                    var coupon = await _context.Coupons
+                        .FirstOrDefaultAsync(c => c.Code == request.CouponCode);
+
+                    if (coupon != null && coupon.QuantityAvailable > 0)
+                    {
+                        discountAmount = coupon.DiscountAmount ??
+                            (coupon.DiscountPercentage.HasValue
+                                ? originalTotalAmount * (coupon.DiscountPercentage.Value / 100m)
+                                : 0);
+
+                        if (coupon.MaxDiscountAmount.HasValue)
+                        {
+                            discountAmount = Math.Min(discountAmount, coupon.MaxDiscountAmount.Value);
+                        }
+                    }
+                }
+
+                // Xử lý phí vận chuyển
+                decimal shippingCost = 0;
+                if (request.ShippingCompanyId.HasValue)
+                {
+                    var shippingCompany = await _context.ShippingCompanies
+                        .FirstOrDefaultAsync(sc => sc.Id == request.ShippingCompanyId.Value);
+
+                    if (shippingCompany != null)
+                    {
+                        shippingCost = shippingCompany.ShippingCost ?? 0;
+                    }
+                }
+
+                // Tính tổng tiền cuối cùng
+                decimal totalAmount = originalTotalAmount - discountAmount + shippingCost;
+
+                // Tạo đối tượng preview
+                var previewData = new
+                {
+                    CartItems = cartDetails,
+                    OriginalTotalAmount = originalTotalAmount,
+                    DiscountAmount = discountAmount,
+                    ShippingCost = shippingCost,
+                    TotalAmount = totalAmount,
+                    CouponCode = request.CouponCode,
+                    ShippingCompanyId = request.ShippingCompanyId,
+                    PaymentMethodId = request.PaymentMethodId,
+                    ShippingAddress = request.ShippingAddress,
+                    PhoneNumber = request.PhoneNumber,
+                    Email = request.Email
+                };
+
+                // Lưu thông tin preview vào session
+                HttpContext.Session.SetString("PreviewOrderData", JsonConvert.SerializeObject(previewData));
+
+                return Ok(previewData);
             }
             catch (Exception ex)
             {
+                // Ghi log lỗi chi tiết
                 _logger.LogError(ex, "Lỗi khi tạo preview cho khách vãng lai");
-                return StatusCode(500, new { message = "Lỗi khi tạo preview cho khách vãng lai", error = ex.Message });
+
+                return StatusCode(500, new
+                {
+                    message = "Lỗi khi tạo preview cho khách vãng lai",
+                    error = ex.Message
+                });
             }
+        }
+        public class ProductDTO
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public decimal Price { get; set; }
+            public string ImageUrl { get; set; }
         }
 
         [Authorize(Roles = "Customer")]
